@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhancing SRD with Intelligent Path Selection - Business Case Analysis</title>
+    <link rel="stylesheet" href="BCstyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="case-analysis-container">
+        <header class="case-header">
+            <nav class="back-nav">
+                <a href="../index.html#srd1-business-case" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Business Case
+                </a>
+                
+            </nav>
+            <h1>Enhancing SRD with Intelligent Path Selection in SDN Environments</h1>
+            <div class="case-meta">
+                <!-- <span class="meta-item">
+                    <i class="fas fa-code"></i>
+                    Role: Algorithmic Programming Engineer
+                </span> -->
+                <span class="meta-item">
+                    <i class="fas fa-project-diagram"></i>
+                    Domain: Network Optimization & Machine Learning
+                </span>
+            </div>
+        </header>
+
+        <main class="case-content">
+            <section class="section">
+                <h2 class="section-title">Overview</h2>
+                <p class="content-text">
+                    Amazon Web Services (AWS) uses Scalable Reliable Datagram (SRD) to provide low-latency, scalable, and reliable networking for its global cloud infrastructure. SRD employs Equal-Cost Multi-Path (ECMP) routing, network-aware path selection, and relaxed packet ordering. However, its path selection is limited by precomputed ECMP routes, reactive rerouting based on health metrics, and the absence of predictive modeling. These constraints reduce SRD's ability to optimize paths in real-time under dynamic conditions like bursty traffic, DDoS attacks, or ultra-low-latency edge-cloud workloads. This business case proposes two enhancements: (1) predictive path selection using machine learning (ML) and (2) hybrid Uniform Cost Search (UCS) + ECMP routing with a persistent segment tree for historical data.
+                </p>
+                <!-- <div class="highlight-box">
+                    <h3>Challenge</h3>
+                    <p>These constraints reduce SRD's ability to optimize paths in real-time under dynamic conditions like bursty traffic, DDoS attacks, or ultra-low-latency edge-cloud workloads.</p>
+                </div> -->
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Current Implementation : AWS SRD Algorithm</h2>
+                <ul class="content-list">
+                    <li>
+                        <strong>Equal-Cost Multi-Path (ECMP) Routing:</strong> Distributes traffic across multiple equal-cost paths using a hash-based mechanism to ensure load balancing. ECMP precomputes paths based on static metrics (e.g., hop count or bandwidth).
+                    </li>
+                    <li>
+                        <strong>Network-Aware Routing:</strong> Considers network topology and health metrics (e.g., link failures, congestion) to select paths dynamically, but rerouting is reactive and triggered only after detecting issues.
+                    </li>
+                    <li>
+                        <strong>Relaxed Packet Ordering:</strong> Allows out-of-order packet delivery to reduce latency, relying on higher-layer protocols to reorder packets if needed.
+                    </li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Proposed Enhancements</h2>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <!-- <h3>Flowchart</h3> -->
+                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 8px; display: inline-block;">
+                        <img src="../image/flow1.png" alt="Hybrid UCS + ECMP Routing Flow" style="max-width: 300%; height: auto; display: block;">
+                    </div>
+                </div>
+                <div class="enhancement-block">
+                    <h3>1. Predictive Path Selection Using Machine Learning</h3>
+                    <p class="content-text">
+                        Integrate a lightweight ML model (e.g., Long Short-Term Memory (LSTM) or Reinforcement Learning (RL)) to predict link performance (latency, jitter, congestion) based on historical data and real-time telemetry.
+                    </p>
+                </div>
+
+                <div class="enhancement-block">
+                    <h3>2. Hybrid UCS + ECMP Routing with Persistent Segment Tree</h3>
+                    <p class="content-text">
+                        Combine Uniform Cost Search (UCS) for dynamic link cost scenarios with ECMP for equal-cost scenarios. Use a persistent segment tree to store and query historical link performance efficiently.
+                    </p>
+                    
+                    <div class="enhancement-header" onclick="toggleDetails(this)">
+                        <h4>View Implementation Details</h4>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    <div class="enhancement-content">
+                        <div class="implementation-part with-image">
+                            <div class="implementation-text">
+                                <p class="implementation-description">
+                                    <h3>Uniform Cost Search (UCS)</h3>
+                                    This implementation uses Uniform Cost Search (UCS) which is a graph traversal algorithm that explores paths in order of their cumulative cost, ensuring the least-cost path is always expanded first. It guarantees optimality when all costs are non-negative. this scenario uses UCS for dynamic link cost scenarios with Equal-Cost Multi-Path (ECMP) routing for equal-cost scenarios.
+                                </p>
+                                <p class="assumptions-text">
+                                    <strong>Assumptions:</strong> The network is bidirectional with positive link costs. Nodes are uniquely identified. UCS finds minimum-cost paths, ECMP handles equal-cost routes, and cached paths improve performance in repeated routing scenarios.
+                                </p>
+                                <button class="view-code-btn" onclick="viewCode('ucs-ecmp')">
+                                    <i class="fas fa-code"></i>
+                                    View Code
+                                </button>
+                                <a href="../../algos/UCS.html" class="watch-simulation-btn">
+                                    <i class="fas fa-play-circle"></i>
+                                    Watch Simulation
+                                </a>
+                            </div>
+                            <div class="implementation-image">
+                                <img src="../image/UCS.png" alt="UCS Algorithm Steps" />
+                            </div>
+                        </div>
+
+                        <div class="implementation-part with-image">
+                            <div class="implementation-text">
+                                <p class="implementation-description">
+                                    <h3>Persistent Segment Tree</h3>
+                                    Use persistent segment tree for historical data management : This implementation uses a Persistent Segment Tree, a data structure that allows versioned updates and queries on historical data over time without overwriting previous states. Each update creates a new version of the tree, enabling efficient access to past values.
+                                </p>
+                                <p class="assumptions-text">
+                                    <strong>Assumptions:</strong> The time domain is bounded and discrete. Link costs are numeric and positive. Edge updates are timestamped and stored in sorted order. Queries retrieve average link costs within time intervals using immutable tree versions.
+                                </p>
+                                <button class="view-code-btn" onclick="viewCode('persistent-segment-tree')">
+                                    <i class="fas fa-code"></i>
+                                    View Code
+                                </button>
+                                <a href="../../algos/Psegment.html" class="watch-simulation-btn">
+                                    <i class="fas fa-play-circle"></i>
+                                    Watch Simulation
+                                </a>
+                            </div>
+                            <div class="implementation-image">
+                                <img src="../image/persistent.png" alt="Persistent Segment Tree Structure" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Space-Time Complexity Analysis</h2>
+                
+                <div class="complexity-table-container">
+                    <table class="complexity-table">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Time Complexity</th>
+                                <th>Space Complexity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="component-cell">Predictive Path Selection (ML)</td>
+                                <td>O(k) for inference<br>O(e * d) for training</td>
+                                <td>O(k + h)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">Hybrid UCS + ECMP</td>
+                                <td>O(m log n) for UCS<br>O(1) for ECMP</td>
+                                <td>O(m + h log h)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <section class="section">
+                    <h2 class="section-title">Trade-offs</h2>
+    
+                    <div class="trade-off-block">
+                        <!-- <h3>Trade-offs</h3> -->
+                        <ul class="content-list">
+                            <li>Computational Overhead: ML models and UCS introduce additional computation</li>
+                            <li>System Complexity: Hybrid routing and persistent segment trees increase maintenance requirements</li>
+                            <li>Latency Overhead: Real-time ML inference may introduce microseconds of delay</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <div class="complexity-summary">
+                    <h3>Summary</h3>
+                    <p class="summary-text">
+                        The proposed enhancements to AWS SRD—predictive path selection using ML and hybrid UCS + ECMP routing with persistent segment trees—address the limitations of static ECMP routes and reactive rerouting. These improvements enable proactive, fine-grained path optimization, enhancing latency, resilience, and scalability for dynamic workloads. While computational and complexity trade-offs exist, the performance gains and competitive advantages justify the enhancements, positioning AWS to better serve latency-sensitive and high-scale applications.
+                    </p>
+                </div>
+
+                <div class="citations-section">
+                    <h2 class="section-title">References</h2>
+                    <ol class="citations-list">
+                        <li>AWS Well-Architected Framework. (2023). Performance Efficiency - Select Network Protocols. <a href="https://docs.aws.amazon.com/wellarchitected/2023-04-10/framework/perf_select_network_protocols.html" target="_blank">https://docs.aws.amazon.com/wellarchitected/2023-04-10/framework/perf_select_network_protocols.html</a></li>
+                        <li>Amazon Science. (2023). A Cloud-Optimized Transport Protocol for Elastic and Scalable HPC. <a href="https://assets.amazon.science/a6/34/41496f64421faafa1cbe301c007c/a-cloud-optimized-transport-protocol-for-elastic-and-scalable-hpc.pdf" target="_blank">https://assets.amazon.science/a6/34/41496f64421faafa1cbe301c007c/a-cloud-optimized-transport-protocol-for-elastic-and-scalable-hpc.pdf</a></li>
+                        <li>GeeksforGeeks. (2023). Uniform Cost Search (UCS) in AI. <a href="https://www.geeksforgeeks.org/uniform-cost-search-ucs-in-ai/" target="_blank">https://www.geeksforgeeks.org/uniform-cost-search-ucs-in-ai/</a></li>
+                        <li>GeeksforGeeks. (2023). Persistent Segment Tree | Set 1 (Introduction). <a href="https://www.geeksforgeeks.org/persistent-segment-tree-set-1-introduction/" target="_blank">https://www.geeksforgeeks.org/persistent-segment-tree-set-1-introduction/</a></li>
+                    </ol>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="codeModal" class="code-modal">
+        <div class="code-modal-content">
+            <div class="code-modal-header">
+                <h3 id="modalTitle">Code Implementation</h3>
+                <button class="close-modal" onclick="closeCodeModal()">&times;</button>
+            </div>
+            <div class="code-modal-body">
+                <pre><code class="python" id="modalCode"></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleDetails(element) {
+        const content = element.nextElementSibling;
+        const icon = element.querySelector('.dropdown-icon');
+        
+        content.classList.toggle('show');
+        icon.classList.toggle('rotate');
+    }
+
+    function scrollToCase() {
+        // Wait for the page to load
+        window.addEventListener('load', function() {
+            // Get the case card element
+            const caseCard = document.querySelector('.case-card:first-child');
+            if (caseCard) {
+                // Smooth scroll to the case card
+                caseCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    const codeImplementations = {
+        'ucs-ecmp': {
+            title: 'UCS with ECMP Fallback for Routing',
+            code: `import heapq
+from collections import defaultdict
+
+# Data Structure for Network Graph
+class Graph:
+    def __init__(self):
+        self.graph = defaultdict(list)
+    
+    def add_edge(self, u, v, cost):
+        self.graph[u].append((v, cost))
+        self.graph[v].append((u, cost))
+    
+    def get_neighbors(self, node):
+        return self.graph[node]
+
+# Hybrid UCS + ECMP Router
+class HybridRouter:
+    def __init__(self, graph):
+        self.graph = graph
+        self.ecmp_cache = defaultdict(list)
+    
+    def ucs(self, start, end):
+        pq = [(0, start, [start])]
+        visited = set()
+        min_cost = float('inf')
+        best_path = []
+        
+        while pq:
+            cost, node, path = heapq.heappop(pq)
+            if node in visited:
+                continue
+            visited.add(node)
+            
+            if node == end:
+                if cost < min_cost:
+                    min_cost = cost
+                    best_path = path
+                continue
+            
+            for neighbor, edge_cost in self.graph.get_neighbors(node):
+                if neighbor not in visited:
+                    total_cost = cost + edge_cost
+                    heapq.heappush(pq, (total_cost, neighbor, path + [neighbor]))
+        
+        return best_path, min_cost
+    
+    def ecmp(self, start, end):
+        if (start, end) in self.ecmp_cache:
+            return self.ecmp_cache[(start, end)]
+        
+        queue = [(start, [start], 0)]
+        paths = []
+        min_cost = float('inf')
+        visited = set()
+        
+        while queue:
+            node, path, cost = queue.pop(0)
+            if node in visited and cost > min_cost:
+                continue
+            visited.add(node)
+            
+            if node == end:
+                if cost < min_cost:
+                    min_cost = cost
+                    paths = [path]
+                elif cost == min_cost:
+                    paths.append(path)
+                continue
+            
+            for neighbor, edge_cost in self.graph.get_neighbors(node):
+                if neighbor not in visited or cost + edge_cost <= min_cost:
+                    queue.append((neighbor, path + [neighbor], cost + edge_cost))
+        
+        self.ecmp_cache[(start, end)] = paths
+        return paths
+    
+    def hybrid_route(self, start, end, cost_threshold=0.1):
+        paths = self.ecmp(start, end)
+        costs = []
+        for path in paths:
+            path_cost = 0
+            for i in range(len(path) - 1):
+                u, v = path[i], path[i + 1]
+                for neighbor, cost in self.graph.get_neighbors(u):
+                    if neighbor == v:
+                        path_cost += cost
+                        break
+            costs.append(path_cost)
+        
+        if max(costs) - min(costs) < cost_threshold:
+            return paths, min(costs)
+        
+        best_path, min_cost = self.ucs(start, end)
+        return [best_path], min_cost
+
+# Example Usage
+def main():
+    g = Graph()
+    g.add_edge(1, 2, 10)
+    g.add_edge(1, 3, 5)
+    g.add_edge(2, 4, 5)
+    g.add_edge(3, 4, 5)
+    g.add_edge(3, 5, 15)
+    g.add_edge(4, 5, 10)
+    
+    router = HybridRouter(g)
+    paths, cost = router.hybrid_route(1, 5)
+    print(f"Hybrid paths from 1 to 5: {paths}, Cost: {cost}")
+
+if __name__ == "__main__":
+    main()`
+        },
+        'segment-tree': {
+            title: 'Persistent Segment Tree Implementation',
+            code: `from collections import defaultdict
+
+# Persistent Segment Tree Node
+class SegmentTreeNode:
+    def __init__(self, start, end, value=0):
+        self.start = start
+        self.end = end
+        self.value = value
+        self.left = None
+        self.right = None
+
+# Persistent Segment Tree
+class PersistentSegmentTree:
+    def __init__(self, max_time):
+        self.max_time = max_time
+        self.roots = []
+    
+    def build(self, start, end):
+        if start == end:
+            return SegmentTreeNode(start, end, 0)
+        mid = (start + end) // 2
+        node = SegmentTreeNode(start, end)
+        node.left = self.build(start, mid)
+        node.right = self.build(mid + 1, end)
+        return node
+    
+    def update(self, prev_root, time, value):
+        new_root = self._update(prev_root, time, value, 0, self.max_time)
+        self.roots.append(new_root)
+        return new_root
+    
+    def _update(self, node, time, value, start, end):
+        new_node = SegmentTreeNode(start, end, node.value)
+        if start == end:
+            new_node.value = value
+            return new_node
+        mid = (start + end) // 2
+        new_node.left = node.left
+        new_node.right = node.right
+        if time <= mid:
+            new_node.left = self._update(node.left, time, value, start, mid)
+        else:
+            new_node.right = self._update(node.right, time, value, mid + 1, end)
+        new_node.value = (new_node.left.value + new_node.right.value) / 2
+        return new_node
+    
+    def query(self, root, start, end, query_start, query_end):
+        if root is None or query_start > root.end or query_end < root.start:
+            return 0
+        if query_start <= root.start and query_end >= root.end:
+            return root.value
+        return (self.query(root.left, start, end, query_start, query_end) +
+                self.query(root.right, start, end, query_start, query_end)) / 2
+
+# Historical Data Manager
+class LinkHistoryManager:
+    def __init__(self, max_time=1000):
+        self.segment_tree = PersistentSegmentTree(max_time)
+        self.root = self.segment_tree.build(0, max_time)
+        self.link_history = defaultdict(list)
+    
+    def update_link_cost(self, u, v, cost, timestamp):
+        edge = tuple(sorted([u, v]))
+        self.link_history[edge].append((timestamp, cost))
+        self.root = self.segment_tree.update(self.root, timestamp, cost)
+    
+    def query_historical_cost(self, u, v, time_start, time_end):
+        edge = tuple(sorted([u, v]))
+        return self.segment_tree.query(self.root, 0, self.segment_tree.max_time, time_start, time_end)
+
+# Example Usage
+def main():
+    manager = LinkHistoryManager()
+    manager.update_link_cost(1, 3, 6, 1)
+    manager.update_link_cost(1, 3, 7, 2)
+    
+    historical_cost = manager.query_historical_cost(1, 3, 0, 2)
+    print(f"Historical cost for edge (1, 3): {historical_cost}")
+
+if __name__ == "__main__":
+    main()`
+        }
+    };
+
+    function viewCode(implementationType) {
+        const modal = document.getElementById('codeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCode = document.getElementById('modalCode');
+        
+        if (codeImplementations[implementationType]) {
+            modalTitle.textContent = codeImplementations[implementationType].title;
+            modalCode.textContent = codeImplementations[implementationType].code;
+            modal.style.display = 'block';
+        }
+    }
+
+    function closeCodeModal() {
+        const modal = document.getElementById('codeModal');
+        modal.style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('codeModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+    </script>
+</body>
+</html>

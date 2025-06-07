@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A* Algorithm Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muted-green: #7BA88D;
+            --light-green: #A3C1AD;
+            --pastel-yellow: #FFF5B8;
+            --light-pastel-yellow: #FFFAD1;
+            --text-dark: #2C3E50;
+            --white: #ffffff;
+            --baby-pink: #FFD1DC;
+            --light-baby-pink: #FFE4E9;
+            --primary-color: var(--muted-green);
+            --secondary-color: #6a9278;
+            --card-background: var(--white);
+            --text-color: var(--text-dark);
+            --border-light: #e2e8f0;
+            --success-color: #22c55e;
+            --highlight-color: var(--pastel-yellow);
+            --baby-pink-accent: var(--baby-pink);
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-pastel-yellow) 0%, var(--pastel-yellow) 100%);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .graph-section {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .container > div:first-child {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1 1 auto;
+            min-width: 300px;
+        }
+
+        canvas {
+            width: 600px;
+            height: 600px; /* Increased height, reduced width */
+            border: 2px solid var(--border-light);
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+        }
+
+        canvas:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        #info {
+            max-width: 1200px;
+            width: 100%;
+            text-align: left;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log {
+            width: 400px;
+            height: 600px; /* Matches canvas height */
+            overflow-y: auto;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log .comment {
+            margin: 0.75rem 0;
+            font-size: 0.95rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        #comment-log .comment:hover {
+            background-color: var(--highlight-color);
+        }
+
+        #comment-log .highlight {
+            background-color: var(--highlight-color);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--muted-green);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        #astar-table {
+            width: 100%;
+            max-width: 1200px;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--card-background);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        #astar-table th, #astar-table td {
+            padding: 0.75rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        #astar-table th {
+            background-color: var(--light-green);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        #astar-table td {
+            background-color: var(--card-background);
+        }
+
+        #astar-table tr:hover td {
+            background-color: var(--highlight-color);
+        }
+
+        #comment-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #comment-log::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container h1 {
+            color: var(--muted-green);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <h1>A* Algorithm Simulation</h1>
+            <div class="graph-section">
+                <canvas id="graphCanvas"></canvas>
+                <div id="comment-log" class="fade-in"></div>
+            </div>
+            <div id="info" class="fade-in">Click "Start Simulation" to visualize the A* algorithm from S to G</div>
+            <table id="astar-table">
+                <thead>
+                    <tr>
+                        <th>Node</th>
+                        <th>g(n)</th>
+                        <th>h(n)</th>
+                        <th>f(n)</th>
+                        <th>Closed List</th>
+                    </tr>
+                </thead>
+                <tbody id="astar-table-body"></tbody>
+            </table>
+            <button onclick="startSimulation()">Start Simulation</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+        const commentLog = document.getElementById('comment-log');
+        const tableBody = document.getElementById('astar-table-body');
+
+        // Canvas dimensions (set dynamically to match CSS)
+        canvas.width = 600;
+        canvas.height = 600;
+
+        // Graph representation
+        const nodes = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'G'];
+        const nodeIndices = Object.fromEntries(nodes.map((node, idx) => [node, idx]));
+        const adjacencyList = {
+            'S': [{ node: 'A', cost: 4 }, { node: 'B', cost: 11 }],
+            'A': [{ node: 'C', cost: 8 }, { node: 'D', cost: 5 }],
+            'B': [{ node: 'D', cost: 15 }, { node: 'E', cost: 20 }],
+            'C': [{ node: 'H', cost: 16 }, { node: 'I', cost: 20 }],
+            'D': [{ node: 'E', cost: 1 }, { node: 'F', cost: 6 }],
+            'E': [{ node: 'F', cost: 2 }],
+            'F': [{ node: 'G', cost: 3 }],
+            'H': [{ node: 'G', cost: 13 }],
+            'I': [{ node: 'G', cost: 5 }],
+            'G': []
+        };
+
+        // Heuristic values
+        const heuristics = {
+            'S': 12,
+            'A': 12,
+            'B': 11,
+            'C': 19,
+            'D': 6,
+            'E': 3,
+            'F': 3,
+            'H': 13,
+            'I': 5,
+            'G': 0
+        };
+
+        // Node positions (adjusted for new canvas dimensions)
+        const nodePositions = [
+            { x: 300, y: 50 },  // S
+            { x: 200, y: 150 }, // A
+            { x: 400, y: 150 }, // B
+            { x: 150, y: 300 }, // C
+            { x: 250, y: 300 }, // D
+            { x: 400, y: 300 }, // E
+            { x: 325, y: 450 }, // F
+            { x: 100, y: 450 }, // H
+            { x: 200, y: 450 }, // I
+            { x: 250, y: 550 }  // G
+        ];
+
+        // A* state
+        let openList = [];
+        let closedList = [];
+        let gScores = {};
+        let fScores = {};
+        let cameFrom = {};
+        let highlightedNode = null;
+        let highlightedEdge = null;
+        let commentIndex = 0;
+        let path = [];
+
+        // Append comment to log and highlight current
+        function appendComment(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            commentDiv.id = `comment-${commentIndex}`;
+            commentDiv.textContent = comment;
+            commentLog.appendChild(commentDiv);
+            const prevHighlight = document.querySelector('.highlight');
+            if (prevHighlight) prevHighlight.classList.remove('highlight');
+            commentDiv.classList.add('highlight');
+            commentLog.scrollTop = commentLog.scrollHeight;
+            commentIndex++;
+        }
+
+        // Update A* table
+        function updateTable() {
+            tableBody.innerHTML = '';
+            openList.forEach(node => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${node}</td>
+                    <td>${gScores[node]}</td>
+                    <td>${heuristics[node]}</td>
+                    <td>${fScores[node]}</td>
+                    <td>${closedList.join(', ')}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            if (openList.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4">Open list empty</td>
+                    <td>${closedList.join(', ')}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        // Draw the graph
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw edges
+            Object.keys(adjacencyList).forEach(from => {
+                adjacencyList[from].forEach(edge => {
+                    const to = edge.node;
+                    const startPos = nodePositions[nodeIndices[from]];
+                    const endPos = nodePositions[nodeIndices[to]];
+                    const isHighlighted = highlightedEdge && highlightedEdge.from === from && highlightedEdge.to === to;
+
+                    // Draw arrow
+                    const angle = Math.atan2(endPos.y - startPos.y, endPos.x - startPos.x);
+                    const offset = 30;
+                    const startX = startPos.x + offset * Math.cos(angle);
+                    const startY = startPos.y + offset * Math.sin(angle);
+                    const endX = endPos.x - offset * Math.cos(angle);
+                    const endY = endPos.y - offset * Math.sin(angle);
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = isHighlighted || path.includes(from + '-' + to) ? '#FFF5B8' : '#2C3E50';
+                    ctx.lineWidth = isHighlighted || path.includes(from + '-' + to) ? 4 : 2;
+                    ctx.stroke();
+
+                    // Draw arrowhead
+                    const arrowLength = 10;
+                    ctx.beginPath();
+                    ctx.moveTo(endX, endY);
+                    ctx.lineTo(
+                        endX - arrowLength * Math.cos(angle - Math.PI / 6),
+                        endY - arrowLength * Math.sin(angle - Math.PI / 6)
+                    );
+                    ctx.moveTo(endX, endY);
+                    ctx.lineTo(
+                        endX - arrowLength * Math.cos(angle + Math.PI / 6),
+                        endY - arrowLength * Math.sin(angle + Math.PI / 6)
+                    );
+                    ctx.stroke();
+
+                    // Draw edge cost
+                    const midX = (startX + endX) / 2;
+                    const midY = (startY + endY) / 2;
+                    ctx.fillStyle = isHighlighted || path.includes(from + '-' + to) ? '#FFF5B8' : '#2C3E50';
+                    ctx.font = '14px Poppins';
+                    ctx.fillText(edge.cost, midX, midY - 10);
+                });
+            });
+
+            // Draw nodes
+            nodes.forEach((node, idx) => {
+                const pos = nodePositions[idx];
+                const isStart = node === 'S';
+                const isGoal = node === 'G';
+                const isClosed = closedList.includes(node);
+                const isHighlighted = node === highlightedNode;
+                const fillColor = isHighlighted ? '#FFF5B8' : (isStart ? '#FF0000' : isGoal ? '#008000' : isClosed ? '#808080' : '#A3C1AD');
+
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 20, 0, 2 * Math.PI);
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+                ctx.strokeStyle = '#2C3E50';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = '#2C3E50';
+                ctx.font = '16px Poppins';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node, pos.x, pos.y);
+                ctx.fillText(`h=${heuristics[node]}`, pos.x, pos.y + 40);
+            });
+        }
+
+        // Reconstruct path
+        function reconstructPath(current) {
+            const pathEdges = [];
+            while (current in cameFrom) {
+                const from = cameFrom[current];
+                pathEdges.push(from + '-' + current);
+                current = from;
+            }
+            return pathEdges.reverse();
+        }
+
+        // A* algorithm simulation
+        async function aStarSimulation() {
+            openList = ['S'];
+            closedList = [];
+            gScores = { 'S': 0 };
+            fScores = { 'S': heuristics['S'] };
+            cameFrom = {};
+
+            while (openList.length > 0) {
+                // Find node with lowest f(n)
+                let current = openList.reduce((a, b) => fScores[a] < fScores[b] ? a : b);
+                highlightedNode = current;
+                appendComment(`Expanding node ${current}: g(${current})=${gScores[current]}, h(${current})=${heuristics[current]}, f(${current})=${fScores[current]}`);
+                drawGraph();
+                updateTable();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                if (current === 'G') {
+                    path = reconstructPath(current);
+                    appendComment(`Goal reached! Path: ${Object.keys(cameFrom).reverse().join(' → ')} → G`);
+                    drawGraph();
+                    infoDiv.textContent = `A* simulation completed. Path: ${Object.keys(cameFrom).reverse().join(' → ')} → G`;
+                    return;
+                }
+
+                openList = openList.filter(node => node !== current);
+                closedList.push(current);
+
+                // Explore neighbors
+                for (let neighbor of adjacencyList[current]) {
+                    const neighborNode = neighbor.node;
+                    const edgeCost = neighbor.cost;
+                    highlightedEdge = { from: current, to: neighborNode };
+                    appendComment(`Exploring edge ${current} → ${neighborNode}, cost=${edgeCost}`);
+                    drawGraph();
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+
+                    const tentativeG = gScores[current] + edgeCost;
+
+                    if (!openList.includes(neighborNode) && !closedList.includes(neighborNode)) {
+                        openList.push(neighborNode);
+                    } else if (tentativeG >= (gScores[neighborNode] || Infinity)) {
+                        continue;
+                    }
+
+                    cameFrom[neighborNode] = current;
+                    gScores[neighborNode] = tentativeG;
+                    fScores[neighborNode] = gScores[neighborNode] + heuristics[neighborNode];
+                    appendComment(`Updated ${neighborNode}: g(${neighborNode})=${gScores[neighborNode]}, h(${neighborNode})=${heuristics[neighborNode]}, f(${neighborNode})=${fScores[neighborNode]}`);
+                }
+                highlightedEdge = null;
+            }
+
+            appendComment('No path found to the goal.');
+            infoDiv.textContent = 'A* simulation completed. No path found to the goal.';
+        }
+
+        // Start simulation
+        async function startSimulation() {
+            openList = [];
+            closedList = [];
+            gScores = {};
+            fScores = {};
+            cameFrom = {};
+            highlightedNode = null;
+            highlightedEdge = null;
+            commentIndex = 0;
+            path = [];
+            tableBody.innerHTML = '';
+            commentLog.innerHTML = '';
+            appendComment('Starting A* simulation from S to G');
+            drawGraph();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            await aStarSimulation();
+        }
+
+        // Initial draw
+        drawGraph();
+    </script>
+</body>
+</html>

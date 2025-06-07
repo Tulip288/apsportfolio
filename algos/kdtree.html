@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kD-Tree Animation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muted-green: #7BA88D;
+            --light-green: #A3C1AD;
+            --pastel-yellow: #FFF5B8;
+            --light-pastel-yellow: #FFFAD1;
+            --text-dark: #2C3E50;
+            --white: #ffffff;
+            --baby-pink: #FFD1DC;
+            --light-baby-pink: #FFE4E9;
+            --primary-color: var(--muted-green);
+            --secondary-color: #6a9278;
+            --card-background: var(--white);
+            --text-color: var(--text-dark);
+            --border-light: #e2e8f0;
+            --highlight-color: var(--pastel-yellow);
+            --baby-pink-accent: var(--baby-pink);
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-pastel-yellow) 0%, var(--pastel-yellow) 100%);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1200px; /* Increased to accommodate side-by-side layout */
+            margin: 0 auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            width: 600px;
+            height: 600px;
+            border: 2px solid var(--border-light);
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+            max-width: 100%;
+        }
+
+        canvas:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        #info {
+            max-width: 600px;
+            width: 100%;
+            text-align: left;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log {
+            max-width: 400px;
+            width: 100%;
+            max-height: 600px; /* Matches canvas height */
+            overflow-y: auto;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log .comment {
+            margin: 0.75rem 0;
+            font-size: 0.95rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        #comment-log .comment:hover {
+            background-color: var(--highlight-color);
+        }
+
+        #comment-log .highlight {
+            background-color: var(--highlight-color);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--muted-green);
+        }
+
+        #comment-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #comment-log::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        #query-table {
+            max-width: 600px;
+            width: 100%;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #query-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        #query-table th, #query-table td {
+            padding: 0.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        #query-table th {
+            background-color: var(--muted-green);
+            color: white;
+        }
+
+        #query-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        .go-back-link {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--card-background);
+            color: var(--muted-green);
+            border: 1px solid var(--muted-green);
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .go-back-link:hover {
+            background-color: var(--light-baby-pink);
+            border-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .go-back-link:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container h1 {
+            color: var(--muted-green);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>kD-Tree Animation</h1>
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="canvas" width="600" height="600"></canvas>
+            </div>
+            <div id="comment-log" class="fade-in"></div>
+        </div>
+        <div id="info" class="fade-in">Click "Start Animation" to visualize kD-Tree construction and query</div>
+        <div id="query-table" class="fade-in">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Region</th>
+                        <th>Points Considered</th>
+                        <th>Points Found</th>
+                    </tr>
+                </thead>
+                <tbody id="query-table-body"></tbody>
+            </table>
+        </div>
+        <button onclick="startAnimation()">Start Animation</button>
+        <a href="#" class="go-back-link">Go Back</a>
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+        const commentLog = document.getElementById('comment-log');
+        const queryTableBody = document.getElementById('query-table-body');
+
+        // Points from the image (scaled to canvas: x, y in [0, 600])
+        const points = [
+            { id: 'a', x: 1 * 70, y: 4 * 70 }, // a(1, 4) -> (70, 280)
+            { id: 'b', x: 2 * 70, y: 5 * 70 }, // b(2, 5) -> (140, 350)
+            { id: 'c', x: 3 * 70, y: 2 * 70 }, // c(3, 2) -> (210, 140)
+            { id: 'd', x: 4 * 70, y: 1 * 70 }, // d(4, 1) -> (280, 70)
+            { id: 'e', x: 5 * 70, y: 3 * 70 }, // e(5, 3) -> (350, 210)
+            { id: 'f', x: 6 * 70, y: 5 * 70 }, // f(6, 5) -> (420, 350)
+            { id: 'g', x: 7 * 70, y: 4 * 70 }  // g(7, 4) -> (490, 280)
+        ];
+
+        // kD-Tree Node structure
+        class KDNode {
+            constructor(point = null, splitAxis = null, splitValue = null, left = null, right = null) {
+                this.point = point; // Leaf node point {id, x, y}
+                this.splitAxis = splitAxis; // 'x' or 'y'
+                this.splitValue = splitValue; // Value to split on
+                this.left = left;
+                this.right = right;
+            }
+        }
+
+        // Animation states
+        let kdTree = null;
+        let commentIndex = 0;
+        let splits = [];
+        let queryRect = { xMin: 5 * 70, xMax: 8 * 70, yMin: 3 * 70, yMax: 6 * 70 }; // Scaled query rectangle
+        let queryResults = [];
+        let querySteps = [];
+
+        // Append comment to log and highlight current
+        function appendComment(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            commentDiv.id = `comment-${commentIndex}`;
+            commentDiv.textContent = comment;
+            commentLog.appendChild(commentDiv);
+            const prevHighlight = document.querySelector('.highlight');
+            if (prevHighlight) prevHighlight.classList.remove('highlight');
+            commentDiv.classList.add('highlight');
+            commentLog.scrollTop = commentLog.scrollHeight;
+            commentIndex++;
+        }
+
+        // Draw the 2D plane with points, splits, and query rectangle
+        function drawScene(highlightPoint = null) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid lines for reference
+            ctx.strokeStyle = '#e2e8f0'; // --border-light
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 600; i += 70) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, 600);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(600, i);
+                ctx.stroke();
+            }
+
+            // Draw splits
+            splits.forEach(split => {
+                ctx.beginPath();
+                if (split.axis === 'x') {
+                    ctx.moveTo(split.value, 0);
+                    ctx.lineTo(split.value, 600);
+                } else {
+                    ctx.moveTo(0, split.value);
+                    ctx.lineTo(600, split.value);
+                }
+                ctx.strokeStyle = '#2C3E50'; // --text-dark
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+
+            // Draw query rectangle
+            if (queryRect) {
+                ctx.beginPath();
+                ctx.rect(queryRect.xMin, queryRect.yMin, queryRect.xMax - queryRect.xMin, queryRect.yMax - queryRect.yMin);
+                ctx.fillStyle = 'rgba(255, 209, 220, 0.3)'; // --baby-pink with opacity
+                ctx.fill();
+                ctx.strokeStyle = '#FFD1DC'; // --baby-pink
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Draw points
+            points.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = highlightPoint && point.id === highlightPoint ? '#FFF5B8' : '#7BA88D'; // --pastel-yellow or --muted-green
+                ctx.fill();
+                ctx.strokeStyle = '#2C3E50';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.font = '12px Poppins';
+                ctx.fillStyle = '#2C3E50';
+                ctx.fillText(point.id, point.x + 15, point.y + 5);
+            });
+        }
+
+        // Build kD-Tree
+        function buildKDTree(points, depth = 0) {
+            if (points.length === 0) return null;
+            if (points.length === 1) return new KDNode(points[0]);
+
+            const axis = depth % 2 === 0 ? 'x' : 'y';
+            points.sort((a, b) => a[axis] - b[axis]);
+            const medianIdx = Math.floor(points.length / 2);
+            const medianPoint = points[medianIdx];
+            const splitValue = medianPoint[axis];
+
+            const leftPoints = points.slice(0, medianIdx);
+            const rightPoints = points.slice(medianIdx + 1);
+
+            return new KDNode(
+                null,
+                axis,
+                splitValue,
+                buildKDTree(leftPoints, depth + 1),
+                buildKDTree(rightPoints, depth + 1)
+            );
+        }
+
+        // Range query on kD-Tree
+        function rangeQuery(node, region, depth = 0) {
+            if (!node) return;
+
+            const axis = node.splitAxis;
+            const value = node.splitValue;
+
+            // Leaf node
+            if (node.point) {
+                const point = node.point;
+                if (
+                    point.x >= queryRect.xMin && point.x <= queryRect.xMax &&
+                    point.y >= queryRect.yMin && point.y <= queryRect.yMax
+                ) {
+                    queryResults.push(point.id);
+                    querySteps.push({
+                        step: `Check point ${point.id}`,
+                        region: `(${region.xMin.toFixed(0)}, ${region.yMin.toFixed(0)}) to (${region.xMax.toFixed(0)}, ${region.yMax.toFixed(0)})`,
+                        pointsConsidered: point.id,
+                        pointsFound: point.id
+                    });
+                } else {
+                    querySteps.push({
+                        step: `Check point ${point.id}`,
+                        region: `(${region.xMin.toFixed(0)}, ${region.yMin.toFixed(0)}) to (${region.xMax.toFixed(0)}, ${region.yMax.toFixed(0)})`,
+                        pointsConsidered: point.id,
+                        pointsFound: '-'
+                    });
+                }
+                return;
+            }
+
+            // Internal node
+            const leftRegion = { ...region };
+            const rightRegion = { ...region };
+            if (axis === 'x') {
+                leftRegion.xMax = Math.min(region.xMax, value);
+                rightRegion.xMin = Math.max(region.xMin, value);
+            } else {
+                leftRegion.yMax = Math.min(region.yMax, value);
+                rightRegion.yMin = Math.max(region.yMin, value);
+            }
+
+            // Square root decomposition: Split regions into sqrt(n) buckets (simplified)
+            const bucketSize = Math.sqrt(points.length); // sqrt(7) ≈ 2.65, so use 3 buckets
+            const bucketStep = `Bucket ${querySteps.length + 1}: Split on ${axis} at ${value.toFixed(0)}`;
+            querySteps.push({
+                step: bucketStep,
+                region: `Left: (${leftRegion.xMin.toFixed(0)}, ${leftRegion.yMin.toFixed(0)}) to (${leftRegion.xMax.toFixed(0)}, ${leftRegion.yMax.toFixed(0)})`,
+                pointsConsidered: '-',
+                pointsFound: '-'
+            });
+            querySteps.push({
+                step: bucketStep,
+                region: `Right: (${rightRegion.xMin.toFixed(0)}, ${rightRegion.yMin.toFixed(0)}) to (${rightRegion.xMax.toFixed(0)}, ${rightRegion.yMax.toFixed(0)})`,
+                pointsConsidered: '-',
+                pointsFound: '-'
+            });
+
+            // Recursively search regions that intersect the query rectangle
+            if (queryRect.xMin <= value) rangeQuery(node.left, leftRegion, depth + 1);
+            if (queryRect.xMax >= value) rangeQuery(node.right, rightRegion, depth + 1);
+        }
+
+        // Update query table
+        function updateQueryTable() {
+            queryTableBody.innerHTML = '';
+            querySteps.forEach(step => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${step.step}</td>
+                    <td>${step.region}</td>
+                    <td>${step.pointsConsidered}</td>
+                    <td>${step.pointsFound}</td>
+                `;
+                queryTableBody.appendChild(row);
+            });
+        }
+
+        // Animation sequence
+        async function animateKDTree() {
+            // Step 1: Initialize points
+            infoDiv.textContent = `Initializing points: ${points.map(p => `${p.id}(${p.x / 70}, ${p.y / 70})`).join(', ')}`;
+            appendComment(`Initializing points: ${points.map(p => `${p.id}(${p.x / 70}, ${p.y / 70})`).join(', ')}`);
+            drawScene();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Step 2: Build kD-Tree
+            kdTree = buildKDTree(points);
+            splits = [];
+            const splitsOrder = [
+                { axis: 'x', value: 4 * 70 }, // Node 1: x=4
+                { axis: 'y', value: 4 * 70 }, // Node 2: y=4
+                { axis: 'y', value: 3 * 70 }, // Node 3: y=3
+                { axis: 'x', value: 2 * 70 }, // Node 4: x=2
+                { axis: 'x', value: 3 * 70 }, // Node 5: x=3
+                { axis: 'x', value: 6 * 70 }  // Node 6: x=6
+            ];
+
+            for (let i = 0; i < splitsOrder.length; i++) {
+                const split = splitsOrder[i];
+                splits.push(split);
+                infoDiv.textContent = `Node ${i + 1}: Splitting on ${split.axis} at ${split.value / 70}`;
+                appendComment(`Node ${i + 1}: Splitting on ${split.axis} at ${split.value / 70}`);
+                drawScene();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            // Step 3: Show final tree
+            infoDiv.textContent = `kD-Tree construction complete`;
+            appendComment(`kD-Tree construction complete`);
+            drawScene();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Step 4: Perform range query
+            infoDiv.textContent = `Performing range query for rectangle (x: 5 to 8, y: 3 to 6)`;
+            appendComment(`Performing range query for rectangle (x: 5 to 8, y: 3 to 6)`);
+            queryResults = [];
+            querySteps = [];
+            const initialRegion = { xMin: 0, xMax: 600, yMin: 0, yMax: 600 };
+            rangeQuery(kdTree, initialRegion);
+            updateQueryTable();
+            drawScene();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Step 5: Highlight points in query range
+            for (let pointId of queryResults) {
+                infoDiv.textContent = `Found point ${pointId} in query range`;
+                appendComment(`Found point ${pointId} in query range`);
+                drawScene(pointId);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            // Final state
+            infoDiv.textContent = `Query complete. Points in range: ${queryResults.join(', ')}`;
+            appendComment(`Query complete. Points in range: ${queryResults.join(', ')}`);
+            drawScene();
+        }
+
+        // Start animation
+        function startAnimation() {
+            splits = [];
+            queryResults = [];
+            querySteps = [];
+            commentIndex = 0;
+            commentLog.innerHTML = '';
+            queryTableBody.innerHTML = '';
+            animateKDTree();
+        }
+
+        // Initial draw
+        drawScene();
+    </script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Tree Animation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muted-green: #7BA88D;
+            --light-green: #A3C1AD;
+            --pastel-yellow: #FFF5B8;
+            --light-pastel-yellow: #FFFAD1;
+            --text-dark: #2C3E50;
+            --white: #ffffff;
+            --baby-pink: #FFD1DC;
+            --light-baby-pink: #FFE4E9;
+            --primary-color: var(--muted-green);
+            --secondary-color: #6a9278;
+            --card-background: var(--white);
+            --text-color: var(--text-dark);
+            --border-light: #e2e8f0;
+            --success-color: #22c55e;
+            --highlight-color: var(--pastel-yellow);
+            --baby-pink-accent: var(--baby-pink);
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-pastel-yellow) 0%, var(--pastel-yellow) 100%);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container > div:first-child {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1 1 auto;
+            min-width: 300px;
+        }
+
+        canvas {
+            width: 800px;
+            height: 400px;
+            border: 2px solid var(--border-light);
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+            max-width: 100%;
+        }
+
+        canvas:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        #info {
+            max-width: 800px;
+            width: 100%;
+            text-align: left;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #calculation-log {
+            max-width: 800px;
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #calculation-log .calculation {
+            margin: 0.75rem 0;
+            font-size: 0.95rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        #calculation-log .calculation:hover {
+            background-color: var(--highlight-color);
+        }
+
+        #calculation-log .highlight {
+            background-color: var(--highlight-color);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--muted-green);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        .go-back-link {
+            display: dile-block;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--card-background);
+            color: var(--muted-green);
+            border: 1px solid var(--muted-green);
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .go-back-link:hover {
+            background-color: var(--light-baby-pink);
+            border-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .go-back-link:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #calculation-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #calculation-log::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #calculation-log::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #calculation-log::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container h1 {
+            color: var(--muted-green);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <h1>Decision Tree Animation</h1>
+            <canvas id="treeCanvas" width="800" height="400"></canvas>
+            <div id="info" class="fade-in">Click "Start Animation" to visualize Decision Tree construction</div>
+            <div id="calculation-log" class="fade-in"></div>
+            <button onclick="startAnimation()">Start Animation</button>
+            <a href="#" class="go-back-link">Go Back</a>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+        const calculationLog = document.getElementById('calculation-log');
+
+        // Node structure for Decision Tree
+        class Node {
+            constructor(condition, classLabel = null, left = null, right = null) {
+                this.condition = condition; // e.g., "Feature1 <= 5" or "Class: Positive"
+                this.classLabel = classLabel; // For leaf nodes
+                this.left = left;
+                this.right = right;
+            }
+        }
+
+        // Dataset for binary classification
+        const dataset = [
+            { Feature1: 3, Feature2: 4, Label: 'Positive' },
+            { Feature1: 6, Feature2: 2, Label: 'Negative' },
+            { Feature1: 2, Feature2: 5, Label: 'Positive' },
+            { Feature1: 7, Feature2: 3, Label: 'Negative' }
+        ];
+
+        // Tree and animation states
+        let decisionTree = null;
+        let calculationIndex = 0;
+        let highlightedNode = null;
+        const nodePositions = [
+            { x: 400, y: 50 },  // Node 1 (root)
+            { x: 200, y: 150 }, // Node 2
+            { x: 600, y: 150 }, // Node 3
+            { x: 100, y: 250 }, // Node 4
+            { x: 300, y: 250 }, // Node 5
+            { x: 500, y: 250 }, // Node 6
+            { x: 700, y: 250 }  // Node 7
+        ];
+
+        // Append calculation to log and highlight current
+        function appendCalculation(calc) {
+            const calcDiv = document.createElement('div');
+            calcDiv.className = 'calculation';
+            calcDiv.id = `calc-${calculationIndex}`;
+            calcDiv.textContent = calc;
+            calculationLog.appendChild(calcDiv);
+            const prevHighlight = document.querySelector('.highlight');
+            if (prevHighlight) prevHighlight.classList.remove('highlight');
+            calcDiv.classList.add('highlight');
+            calculationLog.scrollTop = calculationLog.scrollHeight;
+            calculationIndex++;
+        }
+
+        // Draw rectangular node
+        function drawRectangle(x, y, width, height, fillColor) {
+            ctx.beginPath();
+            ctx.rect(x - width / 2, y - height / 2, width, height);
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            ctx.strokeStyle = '#2C3E50'; // --text-dark
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Draw tree
+        function drawTree() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!decisionTree) return;
+
+            // Draw edges
+            function drawEdges(node, nodeIdx) {
+                if (!node) return;
+                const pos = nodePositions[nodeIdx - 1];
+                if (node.left) {
+                    const leftPos = nodePositions[nodeIdx * 2 - 1];
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y + 20);
+                    ctx.lineTo(leftPos.x, leftPos.y - 20);
+                    ctx.strokeStyle = nodeIdx === highlightedNode ? '#FFD1DC' : '#e2e8f0'; // --baby-pink or --border-light
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                if (node.right) {
+                    const rightPos = nodePositions[nodeIdx * 2];
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y + 20);
+                    ctx.lineTo(rightPos.x, rightPos.y - 20);
+                    ctx.strokeStyle = nodeIdx === highlightedNode ? '#FFD1DC' : '#e2e8f0';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                drawEdges(node.left, nodeIdx * 2);
+                drawEdges(node.right, nodeIdx * 2 + 1);
+            }
+
+            // Draw nodes
+            function drawNodes(node, nodeIdx) {
+                if (!node) return;
+                const pos = nodePositions[nodeIdx - 1];
+                const fillColor = nodeIdx === highlightedNode ? '#FFF5B8' : '#7BA88D'; // --pastel-yellow or --muted-green
+                drawRectangle(pos.x, pos.y, 100, 40, fillColor);
+                ctx.fillStyle = '#2C3E50'; // --text-dark
+                ctx.font = '12px Poppins';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.condition, pos.x, pos.y + 5);
+                drawNodes(node.left, nodeIdx * 2);
+                drawNodes(node.right, nodeIdx * 2 + 1);
+            }
+
+            drawEdges(decisionTree, 1);
+            drawNodes(decisionTree, 1);
+        }
+
+        // Calculate entropy for a dataset
+        function calculateEntropy(data) {
+            const total = data.length;
+            const positive = data.filter(d => d.Label === 'Positive').length;
+            const negative = total - positive;
+            if (positive === 0 || negative === 0) return 0;
+            const pPos = positive / total;
+            const pNeg = negative / total;
+            return -pPos * Math.log2(pPos) - pNeg * Math.log2(pNeg);
+        }
+
+        // Calculate information gain for a split
+        function calculateInformationGain(data, feature, threshold) {
+            const parentEntropy = calculateEntropy(data);
+            const left = data.filter(d => d[feature] <= threshold);
+            const right = data.filter(d => d[feature] > threshold);
+            if (left.length === 0 || right.length === 0) return 0;
+            const leftEntropy = calculateEntropy(left);
+            const rightEntropy = calculateEntropy(right);
+            const weightedEntropy = (left.length / data.length) * leftEntropy + (right.length / data.length) * rightEntropy;
+            return parentEntropy - weightedEntropy;
+        }
+
+        // Find best split for a dataset
+        function findBestSplit(data) {
+            let bestGain = -Infinity;
+            let bestFeature = null;
+            let bestThreshold = null;
+            const features = ['Feature1', 'Feature2'];
+            for (let feature of features) {
+                const values = [...new Set(data.map(d => d[feature]))].sort((a, b) => a - b);
+                for (let i = 0; i < values.length - 1; i++) {
+                    const threshold = (values[i] + values[i + 1]) / 2;
+                    const gain = calculateInformationGain(data, feature, threshold);
+                    if (gain > bestGain) {
+                        bestGain = gain;
+                        bestFeature = feature;
+                        bestThreshold = threshold;
+                    }
+                }
+            }
+            return { feature: bestFeature, threshold: bestThreshold, gain: bestGain };
+        }
+
+        // Build Decision Tree
+        function buildDecisionTree(data, depth = 0, maxDepth = 2) {
+            if (depth >= maxDepth || data.length <= 1) {
+                const positive = data.filter(d => d.Label === 'Positive').length;
+                const negative = data.length - positive;
+                return new Node(`Class: ${positive >= negative ? 'Positive' : 'Negative'}`, positive >= negative ? 'Positive' : 'Negative');
+            }
+            const { feature, threshold, gain } = findBestSplit(data);
+            if (!feature || gain === 0) {
+                const positive = data.filter(d => d.Label === 'Positive').length;
+                const negative = data.length - positive;
+                return new Node(`Class: ${positive >= negative ? 'Positive' : 'Negative'}`, positive >= negative ? 'Positive' : 'Negative');
+            }
+            const leftData = data.filter(d => d[feature] <= threshold);
+            const rightData = data.filter(d => d[feature] > threshold);
+            const left = buildDecisionTree(leftData, depth + 1, maxDepth);
+            const right = buildDecisionTree(rightData, depth + 1, maxDepth);
+            return new Node(`${feature} <= ${threshold.toFixed(1)}`, null, left, right);
+        }
+
+        // Animation sequence
+        async function animateDecisionTree() {
+            // Step 1: Initialize dataset
+            infoDiv.textContent = `Initializing dataset: ${JSON.stringify(dataset)}`;
+            appendCalculation(`Dataset: ${JSON.stringify(dataset)}`);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Step 2: Build root node
+            decisionTree = buildDecisionTree(dataset);
+            highlightedNode = 1;
+            infoDiv.textContent = `Root Node: ${decisionTree.condition}`;
+            const rootEntropy = calculateEntropy(dataset);
+            appendCalculation(`Root Entropy: ${rootEntropy.toFixed(3)}`);
+            drawTree();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Step 3: Calculate best split for root
+            const rootSplit = findBestSplit(dataset);
+            appendCalculation(`Best Split: ${rootSplit.feature} <= ${rootSplit.threshold.toFixed(1)}, Info Gain: ${rootSplit.gain.toFixed(3)}`);
+            drawTree();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Step 4: Split to left and right children
+            const leftData = dataset.filter(d => d[rootSplit.feature] <= rootSplit.threshold);
+            const rightData = dataset.filter(d => d[rootSplit.feature] > rootSplit.threshold);
+            highlightedNode = 2;
+            infoDiv.textContent = `Left Child: ${decisionTree.left.condition}`;
+            appendCalculation(`Left Child Data: ${JSON.stringify(leftData)}, Entropy: ${calculateEntropy(leftData).toFixed(3)}`);
+            drawTree();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            highlightedNode = 3;
+            infoDiv.textContent = `Right Child: ${decisionTree.right.condition}`;
+            appendCalculation(`Right Child Data: ${JSON.stringify(rightData)}, Entropy: ${calculateEntropy(rightData).toFixed(3)}`);
+            drawTree();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Step 5: Process left child's children
+            if (decisionTree.left.left || decisionTree.left.right) {
+                const leftSplit = findBestSplit(leftData);
+                highlightedNode = 4;
+                infoDiv.textContent = `Left Child's Left Node: ${decisionTree.left.left.condition}`;
+                appendCalculation(`Left Child's Split: ${leftSplit.feature} <= ${leftSplit.threshold.toFixed(1)}, Info Gain: ${leftSplit.gain.toFixed(3)}`);
+                drawTree();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                highlightedNode = 5;
+                infoDiv.textContent = `Left Child's Right Node: ${decisionTree.left.right.condition}`;
+                appendCalculation(`Left Child's Right Data Entropy: ${calculateEntropy(leftData.filter(d => d[leftSplit.feature] > leftSplit.threshold)).toFixed(3)}`);
+                drawTree();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            // Step 6: Process right child's children
+            if (decisionTree.right.left || decisionTree.right.right) {
+                const rightSplit = findBestSplit(rightData);
+                highlightedNode = 6;
+                infoDiv.textContent = `Right Child's Left Node: ${decisionTree.right.left.condition}`;
+                appendCalculation(`Right Child's Split: ${rightSplit.feature} <= ${rightSplit.threshold.toFixed(1)}, Info Gain: ${rightSplit.gain.toFixed(3)}`);
+                drawTree();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                highlightedNode = 7;
+                infoDiv.textContent = `Right Child's Right Node: ${decisionTree.right.right.condition}`;
+                appendCalculation(`Right Child's Right Data Entropy: ${calculateEntropy(rightData.filter(d => d[rightSplit.feature] > rightSplit.threshold)).toFixed(3)}`);
+                drawTree();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            highlightedNode = null;
+            infoDiv.textContent = `Decision Tree construction complete`;
+            appendCalculation(`Final Tree Constructed`);
+            drawTree();
+        }
+
+        // Start animation
+        function startAnimation() {
+            decisionTree = null;
+            highlightedNode = null;
+            calculationIndex = 0;
+            calculationLog.innerHTML = '';
+            animateDecisionTree();
+        }
+
+        // Initial draw
+        drawTree();
+    </script>
+</body>
+</html>

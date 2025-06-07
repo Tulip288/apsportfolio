@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Means Clustering Animation (3 Clusters)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muted-green: #7BA88D;
+            --light-green: #A3C1AD;
+            --pastel-yellow: #FFF5B8;
+            --light-pastel-yellow: #FFFAD1;
+            --text-dark: #2C3E50;
+            --white: #ffffff;
+            --baby-pink: #FFD1DC;
+            --light-baby-pink: #FFE4E9;
+            --primary-color: var(--muted-green);
+            --secondary-color: #6a9278;
+            --card-background: var(--white);
+            --text-color: var(--text-dark);
+            --border-light: #e2e8f0;
+            --success-color: #22c55e;
+            --highlight-color: var(--pastel-yellow);
+            --baby-pink-accent: var(--baby-pink);
+            --cluster-blue: #6B728E; /* New color for third cluster */
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-pastel-yellow) 0%, var(--pastel-yellow) 100%);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            width: 600px;
+            height: 600px;
+            border: 2px solid var(--border-light);
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+            max-width: 100%;
+        }
+
+        canvas:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        #info {
+            max-width: 600px;
+            width: 100%;
+            text-align: left;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        .go-back-link {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--card-background);
+            color: var(--muted-green);
+            border: 1px solid var(--muted-green);
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .go-back-link:hover {
+            background-color: var(--light-baby-pink);
+            border-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .go-back-link:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container h1 {
+            color: var(--muted-green);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <h1>K-Means Clustering Animation (3 Clusters)</h1>
+            <canvas id="canvas" width="600" height="600"></canvas>
+            <div id="info" class="fade-in">Click "Start Animation" to visualize K-Means Clustering with 3 clusters</div>
+            <button onclick="startAnimation()">Start Animation</button>
+            <a href="#" class="go-back-link">Go Back</a>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+
+        // Generate 90 points (30 per cluster) with some noise
+        const points = [];
+        for (let i = 0; i < 30; i++) {
+            // Cluster 1: Centered around (150, 150)
+            points.push({
+                x: 150 + (Math.random() - 0.5) * 80,
+                y: 150 + (Math.random() - 0.5) * 80
+            });
+            // Cluster 2: Centered around (400, 150)
+            points.push({
+                x: 400 + (Math.random() - 0.5) * 80,
+                y: 150 + (Math.random() - 0.5) * 80
+            });
+            // Cluster 3: Centered around (275, 400)
+            points.push({
+                x: 275 + (Math.random() - 0.5) * 80,
+                y: 400 + (Math.random() - 0.5) * 80
+            });
+        }
+
+        // K-Means parameters
+        const k = 3;
+        let centroids = [];
+        let assignments = [];
+        const clusterColors = ['#7BA88D', '#FFD1DC', '#6B728E']; // --muted-green, --baby-pink, --cluster-blue
+        let iteration = 0;
+        const maxIterations = 3;
+
+        // Draw points and centroids
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw points
+            points.forEach((point, i) => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = assignments[i] !== undefined ? clusterColors[assignments[i]] : '#2C3E50';
+                ctx.fill();
+                ctx.strokeStyle = '#2C3E50';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+
+            // Draw centroids
+            centroids.forEach((centroid, i) => {
+                ctx.beginPath();
+                ctx.rect(centroid.x - 10, centroid.y - 10, 20, 20);
+                ctx.fillStyle = clusterColors[i];
+                ctx.fill();
+                ctx.strokeStyle = '#FFF5B8'; // --pastel-yellow for highlight
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        // Initialize centroids randomly
+        function initializeCentroids() {
+            centroids = [
+                { x: 100 + Math.random() * 100, y: 100 + Math.random() * 100 }, // Cluster 1
+                { x: 350 + Math.random() * 100, y: 100 + Math.random() * 100 }, // Cluster 2
+                { x: 225 + Math.random() * 100, y: 350 + Math.random() * 100 }  // Cluster 3
+            ];
+            assignments = new Array(points.length).fill(undefined);
+        }
+
+        // Assign points to nearest centroid
+        function assignPoints() {
+            assignments = points.map(point => {
+                let minDist = Infinity;
+                let cluster = 0;
+                centroids.forEach((centroid, i) => {
+                    const dist = Math.sqrt((point.x - centroid.x) ** 2 + (point.y - centroid.y) ** 2);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        cluster = i;
+                    }
+                });
+                return cluster;
+            });
+        }
+
+        // Update centroids based on mean of assigned points
+        function updateCentroids() {
+            const newCentroids = centroids.map(() => ({ x: 0, y: 0, count: 0 }));
+            points.forEach((point, i) => {
+                const cluster = assignments[i];
+                newCentroids[cluster].x += point.x;
+                newCentroids[cluster].y += point.y;
+                newCentroids[cluster].count += 1;
+            });
+            centroids = newCentroids.map((c, i) => ({
+                x: c.count > 0 ? c.x / c.count : centroids[i].x,
+                y: c.count > 0 ? c.y / c.count : centroids[i].y
+            }));
+        }
+
+        // Animation sequence
+        async function animateKMeans() {
+            // Step 1: Initialize centroids
+            initializeCentroids();
+            infoDiv.textContent = `Initializing centroids: [(${centroids[0].x.toFixed(1)}, ${centroids[0].y.toFixed(1)}), (${centroids[1].x.toFixed(1)}, ${centroids[1].y.toFixed(1)}), (${centroids[2].x.toFixed(1)}, ${centroids[2].y.toFixed(1)})]`;
+            drawScene();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Step 2: Iterate K-Means
+            for (iteration = 1; iteration <= maxIterations; iteration++) {
+                // Assign points
+                assignPoints();
+                infoDiv.textContent = `Iteration ${iteration}: Assigning points to nearest centroids`;
+                drawScene();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Update centroids
+                updateCentroids();
+                infoDiv.textContent = `Iteration ${iteration}: Updated centroids to [(${centroids[0].x.toFixed(1)}, ${centroids[0].y.toFixed(1)}), (${centroids[1].x.toFixed(1)}, ${centroids[1].y.toFixed(1)}), (${centroids[2].x.toFixed(1)}, ${centroids[2].y.toFixed(1)})]`;
+                drawScene();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            // Final state
+            infoDiv.textContent = `K-Means complete after ${maxIterations} iterations`;
+            drawScene();
+        }
+
+        // Start animation
+        function startAnimation() {
+            centroids = [];
+            assignments = [];
+            iteration = 0;
+            animateKMeans();
+        }
+
+        // Initial draw
+        drawScene();
+    </script>
+</body>
+</html>

@@ -1,0 +1,895 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persistent Segment Tree Animation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muted-green: #7BA88D;
+            --light-green: #A3C1AD;
+            --pastel-yellow: #FFF5B8;
+            --light-pastel-yellow: #FFFAD1;
+            --text-dark: #2C3E50;
+            --white: #ffffff;
+            --baby-pink: #FFD1DC;
+            --light-baby-pink: #FFE4E9;
+            --primary-color: var(--muted-green);
+            --secondary-color: #6a9278;
+            --card-background: var(--white);
+            --text-color: var(--text-dark);
+            --border-light: #e2e8f0;
+            --success-color: #22c55e;
+            --highlight-color: var(--pastel-yellow);
+            --baby-pink-accent: var(--baby-pink);
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-pastel-yellow) 0%, var(--pastel-yellow) 100%);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .container > div:first-child {
+            flex: 1 1 500px;
+            min-width: 300px;
+            order: 1;
+        }
+
+        canvas {
+            border: 2px solid var(--border-light);
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+            max-width: 100%;
+            height: auto;
+        }
+
+        canvas:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        #info {
+            max-width: 600px;
+            text-align: left;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            min-height: 60px;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log {
+            max-width: 600px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+            flex: 1 1 400px;
+            min-width: 300px;
+            order: 2;
+        }
+
+        #comment-log .comment {
+            margin: 0.75rem 0;
+            font-size: 0.95rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        #comment-log .comment:hover {
+            background-color: var(--highlight-color);
+        }
+
+        #comment-log .highlight {
+            background-color: var(--highlight-color);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--muted-green);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        /* Go Back Link Styles */
+        .go-back-link {
+            display: inline-block; /* Treat the link as a block to apply button styles */
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--card-background); /* Use card background for a lighter look */
+            color: var(--muted-green); /* Use muted green for text color */
+            border: 1px solid var(--muted-green); /* Add a border matching the text */
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-decoration: none; /* Remove default underline */
+            text-align: center; /* Center the text */
+        }
+
+        .go-back-link:hover {
+            background-color: var(--light-baby-pink); /* Hint of pink on hover */
+            border-color: var(--secondary-color); /* Darker border on hover */
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .go-back-link:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Custom scrollbar */
+        #comment-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #comment-log::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container h1 {
+            color: var(--muted-green);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <h1>Persistent Segment Tree Animation</h1>
+            <canvas id="treeCanvas" width="800" height="600"></canvas>
+            <div id="info" class="fade-in">Click "Start Animation" to visualize Persistent Segment Tree</div>
+            <div id="comment-log" class="fade-in"></div>
+            <button onclick="startAnimation()">Start Animation</button>
+            <a href="../../bussCase/case1.html" class="go-back-link">Go Back</a>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+        const commentLog = document.getElementById('comment-log');
+
+        // Node structure for Persistent Segment Tree
+        class Node {
+            constructor(value, left = null, right = null) {
+                this.value = value;
+                this.left = left;
+                this.right = right;
+            }
+        }
+
+        // Tree parameters
+        const n = 4; // Array size
+        const versions = [];
+        let commentIndex = 0;
+
+        // Node positions to match the layout
+        const nodePositions = [
+            { x: 400, y: 50 },  // Node 1 (root)
+            { x: 200, y: 150 }, // Node 2
+            { x: 600, y: 150 }, // Node 3
+            { x: 100, y: 250 }, // Node 4
+            { x: 300, y: 250 }, // Node 5
+            { x: 500, y: 250 }, // Node 6
+            { x: 700, y: 250 }  // Node 7
+        ];
+
+        // Animation states
+        let currentVersion = -1;
+        let highlightedNode = null;
+        const versionColors = ['#7BA88D', '#FFD1DC']; // --muted-green for Version 0, --baby-pink for Version 1
+
+        // Append comment to log and highlight current
+        function appendComment(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            commentDiv.id = `comment-${commentIndex}`;
+            commentDiv.textContent = comment;
+            commentLog.appendChild(commentDiv);
+            const prevHighlight = document.querySelector('.highlight');
+            if (prevHighlight) prevHighlight.classList.remove('highlight');
+            commentDiv.classList.add('highlight');
+            commentLog.scrollTop = commentLog.scrollHeight;
+            commentIndex++;
+        }
+
+        // Draw hexagonal node
+        function drawHexagon(x, y, size, fillColor) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i + Math.PI / 6;
+                const px = x + size * Math.cos(angle);
+                const py = y + size * Math.sin(angle);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            ctx.strokeStyle = '#2C3E50'; // --text-dark
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Draw tree for a specific version
+        function drawTree(version) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (version < 0 || version >= versions.length) return;
+
+            // Draw version labels
+            ctx.font = '20px Poppins';
+            ctx.fillStyle = versionColors[0];
+            ctx.fillText('Version 0', 50, 30);
+            if (version >= 1) {
+                ctx.fillStyle = versionColors[1];
+                ctx.fillText('Version 1', 150, 30);
+            }
+
+            // Draw edges
+            function drawEdges(node, nodeIdx, versionIdx) {
+                if (!node) return;
+                const pos = nodePositions[nodeIdx - 1];
+                if (node.left) {
+                    const leftPos = nodePositions[nodeIdx * 2 - 1];
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y);
+                    ctx.lineTo(leftPos.x, leftPos.y);
+                    ctx.strokeStyle = versionIdx === currentVersion ? versionColors[versionIdx] : '#e2e8f0'; // --border-light
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                if (node.right) {
+                    const rightPos = nodePositions[nodeIdx * 2];
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y);
+                    ctx.lineTo(rightPos.x, rightPos.y);
+                    ctx.strokeStyle = versionIdx === currentVersion ? versionColors[versionIdx] : '#e2e8f0';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                drawEdges(node.left, nodeIdx * 2, versionIdx);
+                drawEdges(node.right, nodeIdx * 2 + 1, versionIdx);
+            }
+
+            // Draw nodes
+            function drawNodes(node, nodeIdx, versionIdx) {
+                if (!node) return;
+                const pos = nodePositions[nodeIdx - 1];
+                const fillColor = nodeIdx === highlightedNode ? '#FFF5B8' : (versionIdx === currentVersion ? versionColors[versionIdx] : '#ccc'); // --pastel-yellow for highlight
+                drawHexagon(pos.x, pos.y, 25, fillColor);
+                ctx.fillStyle = '#2C3E50'; // --text-dark
+                ctx.font = '16px Poppins';
+                ctx.fillText(node.value, pos.x - 10, pos.y + 5);
+                drawNodes(node.left, nodeIdx * 2, versionIdx);
+                drawNodes(node.right, nodeIdx * 2 + 1, versionIdx);
+            }
+
+            // Draw all versions up to the current one
+            for (let v = 0; v <= version; v++) {
+                drawEdges(versions[v], 1, v);
+                drawNodes(versions[v], 1, v);
+            }
+        }
+
+        // Build Segment Tree (Version 0)
+        function buildSegmentTree(arr, start, end) {
+            if (start === end) {
+                return new Node(arr[start]);
+            }
+            const mid = Math.floor((start + end) / 2);
+            const left = buildSegmentTree(arr, start, mid);
+            const right = buildSegmentTree(arr, mid + 1, end);
+            return new Node(left.value + right.value, left, right);
+        }
+
+        // Update Segment Tree (create new version)
+        function updateSegmentTree(prevRoot, index, value, start, end) {
+            if (start === end) {
+                return new Node(value);
+            }
+            const mid = Math.floor((start + end) / 2);
+            let left = prevRoot.left;
+            let right = prevRoot.right;
+            if (index <= mid) {
+                left = updateSegmentTree(prevRoot.left, index, value, start, mid);
+            } else {
+                right = updateSegmentTree(prevRoot.right, index, value, mid + 1, end);
+            }
+            return new Node(left.value + right.value, left, right);
+        }
+
+        // Helper to get node value by index
+        function getNodeValue(root, nodeIdx) {
+            if (!root || nodeIdx > 7) return 0;
+            if (nodeIdx === 1) return root.value;
+            const parentIdx = Math.floor(nodeIdx / 2);
+            const isLeft = nodeIdx % 2 === 0;
+            return getNodeValue(
+                isLeft ? root.left : root.right,
+                isLeft ? nodeIdx * 2 : nodeIdx * 2 + 1
+            );
+        }
+
+        // Animation sequence
+        async function animatePersistentSegmentTree() {
+            // Step 1: Build Version 0
+            const initialArray = [7, 2, 5, 1];
+            currentVersion = 0;
+            versions.push(buildSegmentTree(initialArray, 0, n - 1));
+            infoDiv.textContent = `Building Version 0 from array [7, 2, 5, 1]`;
+            appendComment(`Building Version 0 from array [7, 2, 5, 1]`);
+            highlightedNode = 1;
+            drawTree(currentVersion);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Highlight nodes for Version 0
+            for (let i = 1; i <= 7; i++) {
+                highlightedNode = i;
+                infoDiv.textContent = `Node ${i} in Version 0: value = ${getNodeValue(versions[0], i)}`;
+                appendComment(`Node ${i} in Version 0: value = ${getNodeValue(versions[0], i)}`);
+                drawTree(currentVersion);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            // Step 2: Update to Version 1 (index 2, value 3)
+            currentVersion = 1;
+            versions.push(updateSegmentTree(versions[0], 2, 3, 0, n - 1));
+            infoDiv.textContent = `Creating Version 1: Update index 2 to value 3`;
+            appendComment(`Creating Version 1: Update index 2 to value 3`);
+            highlightedNode = null;
+            drawTree(currentVersion);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Highlight updated path for Version 1
+            const updatedNodes = [1, 3, 6]; // Nodes affected: root, right child, leaf
+            for (let nodeIdx of updatedNodes) {
+                highlightedNode = nodeIdx;
+                infoDiv.textContent = `Version 1: Updated node ${nodeIdx}, value = ${getNodeValue(versions[1], nodeIdx)}`;
+                appendComment(`Version 1: Updated node ${nodeIdx}, value = ${getNodeValue(versions[1], nodeIdx)}`);
+                drawTree(currentVersion);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+        }
+
+        // Start animation
+        function startAnimation() {
+            versions.length = 0;
+            currentVersion = -1;
+            highlightedNode = null;
+            commentIndex = 0;
+            commentLog.innerHTML = '';
+            animatePersistentSegmentTree();
+        }
+
+        // Placeholder for goBack function
+        function goBack() {
+            alert('Go Back functionality not implemented.');
+        }
+
+        // Initial draw
+        drawTree(-1);
+    </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persistent Segment Tree Animation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muted-green: #7BA88D;
+            --light-green: #A3C1AD;
+            --pastel-yellow: #FFF5B8;
+            --light-pastel-yellow: #FFFAD1;
+            --text-dark: #2C3E50;
+            --white: #ffffff;
+            --baby-pink: #FFD1DC;
+            --light-baby-pink: #FFE4E9;
+            --primary-color: var(--muted-green);
+            --secondary-color: #6a9278;
+            --card-background: var(--white);
+            --text-color: var(--text-dark);
+            --border-light: #e2e8f0;
+            --success-color: #22c55e;
+            --highlight-color: var(--pastel-yellow);
+            --baby-pink-accent: var(--baby-pink);
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-pastel-yellow) 0%, var(--pastel-yellow) 100%);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container > div:first-child {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1 1 auto;
+            min-width: 300px;
+        }
+
+        canvas {
+            width: 800px;
+            height: 400px; /* Height is half the width */
+            border: 2px solid var(--border-light);
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+            max-width: 100%;
+        }
+
+        canvas:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        #info {
+            max-width: 800px;
+            width: 100%;
+            text-align: left;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log {
+            max-width: 800px;
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log .comment {
+            margin: 0.75rem 0;
+            font-size: 0.95rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        #comment-log .comment:hover {
+            background-color: var(--highlight-color);
+        }
+
+        #comment-log .highlight {
+            background-color: var(--highlight-color);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--muted-green);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        .go-back-link {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--card-background);
+            color: var(--muted-green);
+            border: 1px solid var(--muted-green);
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .go-back-link:hover {
+            background-color: var(--light-baby-pink);
+            border-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .go-back-link:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #comment-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #comment-log::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container h1 {
+            color: var(--muted-green);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <h1>Persistent Segment Tree Animation</h1>
+            <canvas id="treeCanvas" width="800" height="400"></canvas>
+            <div id="info" class="fade-in">Click "Start Animation" to visualize Persistent Segment Tree</div>
+            <div id="comment-log" class="fade-in"></div>
+            <button onclick="startAnimation()">Start Animation</button>
+            <a href="../../bussCase/case1.html" class="go-back-link">Go Back</a>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+        const commentLog = document.getElementById('comment-log');
+
+        // Node structure for Persistent Segment Tree
+        class Node {
+            constructor(value, left = null, right = null) {
+                this.value = value;
+                this.left = left;
+                this.right = right;
+            }
+        }
+
+        // Tree parameters
+        const n = 4; // Array size
+        const versions = [];
+        let commentIndex = 0;
+
+        // Node positions to match the layout
+        const nodePositions = [
+            { x: 400, y: 50 },  // Node 1 (root)
+            { x: 200, y: 150 }, // Node 2
+            { x: 600, y: 150 }, // Node 3
+            { x: 100, y: 250 }, // Node 4
+            { x: 300, y: 250 }, // Node 5
+            { x: 500, y: 250 }, // Node 6
+            { x: 700, y: 250 }  // Node 7
+        ];
+
+        // Animation states
+        let currentVersion = -1;
+        let highlightedNode = null;
+        const versionColors = ['#7BA88D', '#FFD1DC']; // --muted-green for Version 0, --baby-pink for Version 1
+
+        // Append comment to log and highlight current
+        function appendComment(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            commentDiv.id = `comment-${commentIndex}`;
+            commentDiv.textContent = comment;
+            commentLog.appendChild(commentDiv);
+            const prevHighlight = document.querySelector('.highlight');
+            if (prevHighlight) prevHighlight.classList.remove('highlight');
+            commentDiv.classList.add('highlight');
+            commentLog.scrollTop = commentLog.scrollHeight;
+            commentIndex++;
+        }
+
+        // Draw hexagonal node
+        function drawHexagon(x, y, size, fillColor) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i + Math.PI / 6;
+                const px = x + size * Math.cos(angle);
+                const py = y + size * Math.sin(angle);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            ctx.strokeStyle = '#2C3E50'; // --text-dark
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Draw tree for a specific version
+        function drawTree(version) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (version < 0 || version >= versions.length) return;
+
+            // Draw version labels
+            ctx.font = '20px Poppins';
+            ctx.fillStyle = versionColors[0];
+            ctx.fillText('Version 0', 50, 30);
+            if (version >= 1) {
+                ctx.fillStyle = versionColors[1];
+                ctx.fillText('Version 1', 150, 30);
+            }
+
+            // Draw edges
+            function drawEdges(node, nodeIdx, versionIdx) {
+                if (!node) return;
+                const pos = nodePositions[nodeIdx - 1];
+                if (node.left) {
+                    const leftPos = nodePositions[nodeIdx * 2 - 1];
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y);
+                    ctx.lineTo(leftPos.x, leftPos.y);
+                    ctx.strokeStyle = versionIdx === currentVersion ? versionColors[versionIdx] : '#e2e8f0'; // --border-light
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                if (node.right) {
+                    const rightPos = nodePositions[nodeIdx * 2];
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y);
+                    ctx.lineTo(rightPos.x, rightPos.y);
+                    ctx.strokeStyle = versionIdx === currentVersion ? versionColors[versionIdx] : '#e2e8f0';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                drawEdges(node.left, nodeIdx * 2, versionIdx);
+                drawEdges(node.right, nodeIdx * 2 + 1, versionIdx);
+            }
+
+            // Draw nodes
+            function drawNodes(node, nodeIdx, versionIdx) {
+                if (!node) return;
+                const pos = nodePositions[nodeIdx - 1];
+                const fillColor = nodeIdx === highlightedNode ? '#FFF5B8' : (versionIdx === currentVersion ? versionColors[versionIdx] : '#ccc'); // --pastel-yellow for highlight
+                drawHexagon(pos.x, pos.y, 25, fillColor);
+                ctx.fillStyle = '#2C3E50'; // --text-dark
+                ctx.font = '16px Poppins';
+                ctx.fillText(node.value, pos.x - 10, pos.y + 5);
+                drawNodes(node.left, nodeIdx * 2, versionIdx);
+                drawNodes(node.right, nodeIdx * 2 + 1, versionIdx);
+            }
+
+            // Draw all versions up to the current one
+            for (let v = 0; v <= version; v++) {
+                drawEdges(versions[v], 1, v);
+                drawNodes(versions[v], 1, v);
+            }
+        }
+
+        // Build Segment Tree (Version 0)
+        function buildSegmentTree(arr, start, end) {
+            if (start === end) {
+                return new Node(arr[start]);
+            }
+            const mid = Math.floor((start + end) / 2);
+
+
+            const left = buildSegmentTree(arr, start, mid);
+            const right = buildSegmentTree(arr, mid + 1, end);
+            return new Node(left.value + right.value, left, right);
+        }
+
+        // Update Segment Tree (create new version)
+        function updateSegmentTree(prevRoot, index, value, start, end) {
+            if (start === end) {
+                return new Node(value);
+            }
+            const mid = Math.floor((start + end) / 2);
+            let left = prevRoot.left;
+            let right = prevRoot.right;
+            if (index <= mid) {
+                left = updateSegmentTree(prevRoot.left, index, value, start, mid);
+            } else {
+                right = updateSegmentTree(prevRoot.right, index, value, mid + 1, end);
+            }
+            return new Node(left.value + right.value, left, right);
+        }
+
+        // Helper to get node value by index
+        function getNodeValue(root, nodeIdx) {
+            if (!root || nodeIdx > 7) return 0;
+            if (nodeIdx === 1) return root.value;
+            const parentIdx = Math.floor(nodeIdx / 2);
+            const isLeft = nodeIdx % 2 === 0;
+            return getNodeValue(
+                isLeft ? root.left : root.right,
+                isLeft ? nodeIdx * 2 : nodeIdx * 2 + 1
+            );
+        }
+
+        // Animation sequence
+        async function animatePersistentSegmentTree() {
+            // Step 1: Build Version 0
+            const initialArray = [7, 2, 5, 1];
+            currentVersion = 0;
+            versions.push(buildSegmentTree(initialArray, 0, n - 1));
+            infoDiv.textContent = `Building Version 0 from array [7, 2, 5, 1]`;
+            appendComment(`Building Version 0 from array [7, 2, 5, 1]`);
+            highlightedNode = 1;
+            drawTree(currentVersion);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Highlight nodes for Version 0
+            for (let i = 1; i <= 7; i++) {
+                highlightedNode = i;
+                infoDiv.textContent = `Node ${i} in Version 0: value = ${getNodeValue(versions[0], i)}`;
+                appendComment(`Node ${i} in Version 0: value = ${getNodeValue(versions[0], i)}`);
+                drawTree(currentVersion);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            // Step 2: Update to Version 1 (index 2, value 3)
+            currentVersion = 1;
+            versions.push(updateSegmentTree(versions[0], 2, 3, 0, n - 1));
+            infoDiv.textContent = `Creating Version 1: Update index 2 to value 3`;
+            appendComment(`Creating Version 1: Update index 2 to value 3`);
+            highlightedNode = null;
+            drawTree(currentVersion);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Highlight updated path for Version 1
+            const updatedNodes = [1, 3, 6]; // Nodes affected: root, right child, leaf
+            for (let nodeIdx of updatedNodes) {
+                highlightedNode = nodeIdx;
+                infoDiv.textContent = `Version 1: Updated node ${nodeIdx}, value = ${getNodeValue(versions[1], nodeIdx)}`;
+                appendComment(`Version 1: Updated node ${nodeIdx}, value = ${getNodeValue(versions[1], nodeIdx)}`);
+                drawTree(currentVersion);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+        }
+
+        // Start animation
+        function startAnimation() {
+            versions.length = 0;
+            currentVersion = -1;
+            highlightedNode = null;
+            commentIndex = 0;
+            commentLog.innerHTML = '';
+            animatePersistentSegmentTree();
+        }
+
+        // Placeholder for goBack function
+        function goBack() {
+            alert('Go Back functionality not implemented.');
+        }
+
+        // Initial draw
+        drawTree(-1);
+    </script>
+</body>
+</html>

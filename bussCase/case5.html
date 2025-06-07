@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhancing AWS Resilience Hub Reports with ML and Clustering - Business Case Analysis</title>
+    <link rel="stylesheet" href="BCstyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="case-analysis-container">
+        <header class="case-header">
+            <nav class="back-nav">
+                <a href="../index.html#srd5-business-case" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Business Case
+                </a>
+            </nav>
+            <h1>Modifying AWS Resilience Hub Reports </h1>
+            <div class="case-meta">
+                <span class="meta-item">
+                    <i class="fas fa-project-diagram"></i>
+                    Domain: Cloud Resilience & Machine Learning
+                </span>
+            </div>
+        </header>
+
+        <main class="case-content">
+            <section class="section">
+                <h2 class="section-title">Overview</h2>
+                <p class="content-text">
+                    AWS Resilience Hub automates resilience assessments for workloads, evaluating risks and recovery capabilities. However, its technical reports are complex, limiting accessibility for non-technical stakeholders, and dependency mapping may not prioritize actionable recommendations or group similar applications effectively. This business case proposes three enhancements: (1) Natural Language Summarization using Amazon Bedrock's foundation models to create concise, stakeholder-friendly summaries, (2) Decision Tree Algorithm for prioritizing operational recommendations, and (3) K-Means Clustering to group applications by resilience characteristics. These improvements aim to enhance report accessibility, accelerate decision-making, and provide clear, actionable insights.
+                </p>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Current Algorithms Used by AWS Resilience Hub</h2>
+                <ul class="content-list">
+                    <li><strong>Dependency Mapping:</strong> Uses graph-based analysis to map dependencies between AWS resources (e.g., microservices, databases, VPCs). Likely employs Depth-First Search (DFS) or Breadth-First Search (BFS) for traversal.</li>
+                    <li><strong>Risk Assessment:</strong> Applies rule-based scoring to evaluate resilience based on Recovery Time Objective (RTO) and Recovery Point Objective (RPO). Uses static analysis of configurations and CloudWatch health metrics.</li>
+                    <li><strong>Report Generation:</strong> Produces detailed technical reports summarizing risks, dependencies, and recovery strategies. Relies on template-based text generation, lacking automated summarization or prioritization.</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Proposed Enhancements</h2>
+                <div class="enhancement-block">
+                    <h3>1. Natural Language Summarization via Amazon Bedrock</h3>
+                    <p class="content-text">
+                        <strong>Idea:</strong> Use Amazon Bedrock's foundation models (e.g., Claude, Titan) to summarize Resilience Hub reports into plain-English narratives for non-technical stakeholders.This Simplifies reports, accelerates stakeholder understanding, and fosters cross-team collaboration.
+                    </p>
+                    <p class="content-text">
+                        <strong>Implementation:</strong> Input raw reports (JSON/text) into Bedrock's NLP models. Generate summaries highlighting risks, key components, and recovery strategies. Filter by business unit or priority using metadata tags. Deploy via AWS Lambda for real-time integration.
+                    </p>
+                </div>
+                <div class="enhancement-block">
+                    <h3>2. Decision Tree Algorithm for Recommendation Prioritization</h3>
+                    <p class="content-text">
+                        <strong>Idea:</strong> Use a Decision Tree to rank operational recommendations (e.g., adding alarms, SOPs) based on cost, RTO/RPO improvement, and disruption type.
+                    </p>
+                    <div class="enhancement-header" onclick="toggleDetails(this)">
+                        <h4>View Implementation Details</h4>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    <div class="enhancement-content">
+                        <div class="implementation-part">
+                            <p class="implementation-description">
+                                <strong>Implementation:</strong> Train a Decision Tree on historical assessment data with features like cost and RTO impact. Predict priority (e.g., High, Medium, Low) for new recommendations. Include ranked recommendations in reports to guide action. Deploy on SageMaker or Lambda for scalability.
+                            </p>
+                            <div style="text-align:center; margin: 1.5rem 0;">
+                                <img src="../image/Descisiontree.png" alt="Decision Tree Diagram" style="max-width:420px;width:100%;height:auto;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,0.08);background:#fff;object-fit:contain;">
+                            </div>
+                            <p class="assumptions-text">
+                                <strong>Assumptions:</strong> The Decision Tree assumes static, labeled recommendation data with numerical features (cost, RTO improvement), categorical disruption types, and predefined priority classes. It uses historical assessments without real-time telemetry and ignores complex feature interactions.
+                            </p>
+                            <button class="view-code-btn" onclick="viewCode('decision-tree')">
+                                <i class="fas fa-code"></i>
+                                View Code
+                            </button>
+                            <a href="../algos/descisiontree.html" target="_blank" class="view-code-btn" style="margin-left: 10px; text-decoration: none; display: inline-block;">
+                                <i class="fas fa-play"></i>
+                                Watch Simulation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="enhancement-block">
+                    <h3>3. K-Means Clustering for Application Grouping</h3>
+                    <p class="content-text">
+                        <strong>Idea:</strong> Group applications by resilience metrics (e.g., RTO, RPO, score) to identify trends and prioritize resources.
+                    </p>
+                    <div class="enhancement-header" onclick="toggleDetails(this)">
+                        <h4>View Implementation Details</h4>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    <div class="enhancement-content">
+                        <div class="implementation-part">
+                            <p class="implementation-description">
+                                <strong>Implementation:</strong> Apply K-Means to cluster applications based on numerical metrics. Label clusters (e.g., "low-resilience apps") for report insights. Visualize clusters in reports to highlight at-risk groups. Run on SageMaker for large-scale processing.
+                            </p>
+                            <div style="text-align:center; margin: 1.5rem 0;">
+                                <img src="../image/kmeanscluster.png" alt="K-Means Clustering Plot" style="max-width:420px;width:100%;height:auto;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,0.08);background:#fff;object-fit:contain;">
+                            </div>
+                            <p class="assumptions-text">
+                                <strong>Assumptions:</strong> K-Means assumes numerical resilience metrics (RTO, RPO, score), a fixed number of clusters, and Euclidean distance for similarity. It uses static assessment data without real-time updates and assumes applications have comparable metrics.
+                            </p>
+                            <button class="view-code-btn" onclick="viewCode('kmeans')">
+                                <i class="fas fa-code"></i>
+                                View Code
+                            </button>
+                            <a href="../algos/cluster.html" target="_blank" class="view-code-btn" style="margin-left: 10px; text-decoration: none; display: inline-block;">
+                                <i class="fas fa-play"></i>
+                                Watch Simulation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Trade-offs</h2>
+                <ul class="content-list">
+                    <li>Computational Overhead: NLP summarization, Decision Trees, and K-Means increase CPU/memory usage for large datasets.</li>
+                    <li>Training Costs: Bedrock and SageMaker models require resources and curated datasets for training.</li>
+                    <li>Complexity: Integrating NLP, Decision Trees, and clustering adds system maintenance complexity.</li>
+                    <li>Information Loss: Summarization may omit technical details, requiring tuning for balance.</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Space-Time Complexity Analysis</h2>
+                <div class="complexity-table-container">
+                    <table class="complexity-table">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Time Complexity</th>
+                                <th>Space Complexity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="component-cell">Dependency Mapping (DFS/BFS)</td>
+                                <td>O(n + m)</td>
+                                <td>O(n + m)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">Natural Language Summarization (Bedrock)</td>
+                                <td>O(t) inference<br>O(e * d) training</td>
+                                <td>O(t + p)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">Decision Tree for Recommendation Prioritization</td>
+                                <td>O(f * n * log n) training<br>O(log n) inference</td>
+                                <td>O(n + f)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">K-Means Clustering for Application Grouping</td>
+                                <td>O(i * k * n * f)</td>
+                                <td>O(n + k)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="complexity-summary">
+                <h3>Summary</h3>
+                <p class="summary-text">
+                    The proposed enhancements—Natural Language Summarization via Amazon Bedrock, Decision Tree prioritization, and K-Means clustering—address the complexity and lack of prioritization in AWS Resilience Hub reports. Summarization improves accessibility, Decision Trees focus actions, and clustering highlights trends, accelerating decisions and strengthening resilience for enterprise workloads.
+                </p>
+            </div>
+
+            <div class="citations-section">
+                <h2 class="section-title">References</h2>
+                <ol class="citations-list">
+                    <li>AWS. (2023). Review an Assessment in AWS Resilience Hub. <a href="https://docs.aws.amazon.com/resilience-hub/latest/userguide/review-assessment.html" target="_blank">https://docs.aws.amazon.com/resilience-hub/latest/userguide/review-assessment.html</a></li>
+                    <li>AWS. (2023). Application Resources in AWS Resilience Hub. <a href="https://docs.aws.amazon.com/resilience-hub/latest/userguide/application-resources.html" target="_blank">https://docs.aws.amazon.com/resilience-hub/latest/userguide/application-resources.html</a></li>
+                    <li>AWS. (2023). AWS Resilience Hub Tools. <a href="https://github.com/aws-samples/aws-resilience-hub-tools" target="_blank">https://github.com/aws-samples/aws-resilience-hub-tools</a></li>
+                </ol>
+            </div>
+        </main>
+    </div>
+
+    <div id="codeModal" class="code-modal">
+        <div class="code-modal-content">
+            <div class="code-modal-header">
+                <h3 id="modalTitle">Code Implementation</h3>
+                <button class="close-modal" onclick="closeCodeModal()">&times;</button>
+            </div>
+            <div class="code-modal-body">
+                <pre><code class="python" id="modalCode"></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleDetails(element) {
+        const content = element.nextElementSibling;
+        const icon = element.querySelector('.dropdown-icon');
+        content.classList.toggle('show');
+        icon.classList.toggle('rotate');
+    }
+
+    const codeImplementations = {
+        'decision-tree': {
+            title: 'Decision Tree for Recommendation Prioritization',
+            code: `from sklearn.tree import DecisionTreeClassifier\nfrom sklearn.preprocessing import LabelEncoder\nimport pandas as pd\n\n# Sample Data for Recommendations\ndata = {\n    'recommendation': ['Add Alarm', 'Create SOP', 'Run FIS Test'],\n    'cost': [10, 20, 30],\n    'rto_improvement': [0.5, 0.3, 0.7],\n    'disruption_type': ['AZ', 'Region', 'Infra'],\n    'priority': ['High', 'Medium', 'High']\n}\ndf = pd.DataFrame(data)\n\n# Encode Categorical Features\nle_disruption = LabelEncoder()\nle_priority = LabelEncoder()\ndf['disruption_type'] = le_disruption.fit_transform(df['disruption_type'])\ndf['priority'] = le_priority.fit_transform(df['priority'])\n\n# Features and Target\nX = df[['cost', 'rto_improvement', 'disruption_type']]\ny = df['priority']\n\n# Train Decision Tree\nclf = DecisionTreeClassifier(random_state=42)\nclf.fit(X, y)\n\n# Predict Priority for New Recommendation\nnew_rec = [[15, 0.4, le_disruption.transform(['AZ'])[0]]]\npriority = le_priority.inverse_transform(clf.predict(new_rec))[0]\nprint(f"Predicted Priority: {priority}")`
+        },
+        'kmeans': {
+            title: 'K-Means Clustering for Application Grouping',
+            code: `from sklearn.cluster import KMeans\nimport pandas as pd\n\n# Sample data: applications with resilience metrics\ndata = {\n    'app': ['App1', 'App2', 'App3', 'App4'],\n    'rto': [60, 120, 65, 130],\n    'rpo': [30, 60, 35, 70],\n    'resilience_score': [40, 20, 45, 25]\n}\ndf = pd.DataFrame(data)\n\n# Features for clustering\nX = df[['rto', 'rpo', 'resilience_score']]\n\n# Apply K-Means\nkmeans = KMeans(n_clusters=2, random_state=42)\ndf['cluster'] = kmeans.fit_predict(X)\n\n# Output clusters\nprint(df[['app', 'cluster']])`
+        }
+    };
+
+    function viewCode(implementationType) {
+        const modal = document.getElementById('codeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCode = document.getElementById('modalCode');
+        
+        if (codeImplementations[implementationType]) {
+            modalTitle.textContent = codeImplementations[implementationType].title;
+            modalCode.textContent = codeImplementations[implementationType].code;
+            modal.style.display = 'block';
+        }
+    }
+
+    function closeCodeModal() {
+        const modal = document.getElementById('codeModal');
+        modal.style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('codeModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+    </script>
+</body>
+</html>

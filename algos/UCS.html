@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uniform Cost Search Animation with Comment Log</title>
+    <style>
+        :root {
+            --muted-green: #7BA88D;
+            --light-green: #A3C1AD;
+            --pastel-yellow: #FFF5B8;
+            --light-pastel-yellow: #FFFAD1;
+            --text-dark: #2C3E50;
+            --white: #ffffff;
+            --baby-pink: #FFD1DC;
+            --light-baby-pink: #FFE4E9;
+            --primary-color: var(--muted-green);
+            --secondary-color: #6a9278; /* Darker muted green */
+            --card-background: var(--white);
+            --text-color: var(--text-dark);
+            --border-light: #e2e8f0;
+            --success-color: #22c55e;
+            --highlight-color: var(--pastel-yellow);
+            --baby-pink-accent: var(--baby-pink); /* Add a specific variable for baby pink accent */
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-pastel-yellow) 0%, var(--pastel-yellow) 100%);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            justify-content: center; /* Center items when they wrap */
+        }
+
+        .container > div:first-child {
+            flex: 2 1 600px; /* Allow canvas container to grow/shrink, with a basis of 600px */
+            min-width: 300px;
+            order: 1;
+        }
+
+        canvas {
+            border: 2px solid var(--border-light);
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+            flex: 1 1 200px;
+            min-width: 150px;
+        }
+
+        canvas:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        #info {
+            max-width: 600px;
+            text-align: left;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            min-height: 60px;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log {
+            max-width: 600px;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+            flex: 1 1 400px;
+            min-width: 250px;
+            order: 3;
+            background-color: rgba(var(--baby-pink-accent), 0.1); /* Add a subtle background to visualize the div */
+        }
+
+        #comment-log .comment {
+            margin: 0.75rem 0;
+            font-size: 0.95rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        #comment-log .comment:hover {
+            background-color: var(--highlight-color);
+        }
+
+        #comment-log .highlight {
+            background-color: var(--highlight-color);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--muted-green);
+        }
+
+        #weight-table {
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid var(--border-light);
+            height: fit-content;
+            flex: 1 1 200px; /* Allow weight table to grow/shrink, with a basis of 200px */
+            min-width: 150px;
+            order: 2;
+        }
+
+        #weight-table table {
+            border-collapse: collapse;
+            width: 200px;
+            font-size: 0.95rem;
+        }
+
+        #weight-table th, #weight-table td {
+            border: 1px solid var(--border-light);
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        #weight-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        #weight-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        #weight-table tr:hover {
+            background-color: var(--highlight-color);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        /* Go Back Button Styles */
+        button[onclick="goBack()"] {
+            background-color: var(--card-background); /* Use card background for a lighter look */
+            color: var(--muted-green); /* Use muted green for text color */
+            border: 1px solid var(--muted-green); /* Add a border matching the text */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        button[onclick="goBack()"]:hover {
+            background-color: var(--light-baby-pink); /* Hint of pink on hover */
+            border-color: var(--secondary-color); /* Darker border on hover */
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button[onclick="goBack()"]:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Custom scrollbar */
+        #comment-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #comment-log::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container h1 {
+            color: var(--muted-green);
+            text-align: center; /* Center the heading */
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <h1>Uniform Cost Search</h1>
+            <canvas id="graphCanvas" width="600" height="400"></canvas>
+            <div id="info">Click "Start UCS" to animate Uniform Cost Search</div>
+            
+            <button onclick="startUCS()">Start UCS</button>
+            <button onclick="stopUCS()">Stop UCS</button>
+            <button onclick="goBack()">Go Back</button>
+        </div>
+        <div id="weight-table">
+            <table>
+                <tr><th>Edge</th><th>Weight</th></tr>
+                <tr><td>0-1</td><td>4</td></tr>
+                <tr><td>0-2</td><td>2</td></tr>
+                <tr><td>1-3</td><td>1</td></tr>
+                <tr><td>1-4</td><td>5</td></tr>
+                <tr><td>2-3</td><td>8</td></tr>
+                <tr><td>2-5</td><td>10</td></tr>
+                <tr><td>3-4</td><td>2</td></tr>
+                <tr><td>3-5</td><td>5</td></tr>
+                <tr><td>4-5</td><td>3</td></tr>
+            </table>
+        </div>
+        <div id="comment-log"></div>
+    </div>
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+        const commentLog = document.getElementById('comment-log');
+
+        let isStopping = false; // Flag to control stopping
+
+        // Graph representation: adjacency list with weights
+        const graph = {
+            0: [{ node: 1, cost: 4 }, { node: 2, cost: 2 }],
+            1: [{ node: 0, cost: 4 }, { node: 3, cost: 1 }, { node: 4, cost: 5 }],
+            2: [{ node: 0, cost: 2 }, { node: 3, cost: 8 }, { node: 5, cost: 10 }],
+            3: [{ node: 1, cost: 1 }, { node: 2, cost: 8 }, { node: 4, cost: 2 }, { node: 5, cost: 5 }],
+            4: [{ node: 1, cost: 5 }, { node: 3, cost: 2 }, { node: 5, cost: 3 }],
+            5: [{ node: 2, cost: 10 }, { node: 3, cost: 5 }, { node: 4, cost: 3 }]
+        };
+
+        // Node positions (circular layout)
+        const nodes = [
+            { x: 300, y: 100 }, // Node 0
+            { x: 450, y: 200 }, // Node 1
+            { x: 150, y: 200 }, // Node 2
+            { x: 300, y: 300 }, // Node 3
+            { x: 450, y: 300 }, // Node 4
+            { x: 150, y: 300 }  // Node 5
+        ];
+
+        // Animation states
+        let priorityQueue = [];
+        let visited = new Set();
+        let distances = {};
+        let parents = {};
+        let currentNode = null;
+        let path = [];
+        let commentIndex = 0;
+
+        // Append comment to log and highlight current
+        function appendComment(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            commentDiv.id = `comment-${commentIndex}`;
+            commentDiv.textContent = comment;
+            commentLog.appendChild(commentDiv);
+            // Remove previous highlight
+            const prevHighlight = document.querySelector('.highlight');
+            if (prevHighlight) prevHighlight.classList.remove('highlight');
+            // Highlight current comment
+            commentDiv.classList.add('highlight');
+            commentLog.scrollTop = commentLog.scrollHeight; // Auto-scroll to bottom
+            commentIndex++;
+        }
+
+        // Draw graph
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw edges
+            for (let node in graph) {
+                graph[node].forEach(edge => {
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[node].x, nodes[node].y);
+                    ctx.lineTo(nodes[edge.node].x, nodes[edge.node].y);
+                    ctx.strokeStyle = path.includes(node + '-' + edge.node) || path.includes(edge.node + '-' + node) ? 'red' : '#333';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    // Draw edge weight
+                    const midX = (nodes[node].x + nodes[edge.node].x) / 2;
+                    const midY = (nodes[node].y + nodes[edge.node].y) / 2;
+                    ctx.fillStyle = '#333';
+                    ctx.font = '12px Arial';
+                    ctx.fillText(edge.cost, midX, midY);
+                });
+            }
+            // Draw nodes
+            nodes.forEach((pos, i) => {
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 20, 0, 2 * Math.PI);
+                ctx.fillStyle = visited.has(i) ? 'green' : (currentNode === i ? 'blue' : '#ccc');
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.stroke();
+                ctx.fillStyle = '#000';
+                ctx.font = '16px Arial';
+                ctx.fillText(i, pos.x - 5, pos.y + 5);
+                if (distances[i] !== undefined) {
+                    ctx.fillText(distances[i].toFixed(1), pos.x - 10, pos.y - 25);
+                }
+            });
+        }
+
+        // Priority Queue for UCS
+        class PriorityQueue {
+            constructor() {
+                this.values = [];
+            }
+            enqueue(node, cost) {
+                this.values.push({ node, cost });
+                this.sort();
+            }
+            dequeue() {
+                return this.values.shift();
+            }
+            sort() {
+                this.values.sort((a, b) => a.cost - b.cost);
+            }
+        }
+
+        // Uniform Cost Search with animation and comments
+        async function uniformCostSearch(start, goal) {
+            if (isStopping) {
+                infoDiv.textContent = 'UCS stopped by user.';
+                appendComment('UCS stopped by user.');
+                isStopping = false; // Reset flag
+                return;
+            }
+            priorityQueue = new PriorityQueue();
+            priorityQueue.enqueue(start, 0);
+            distances[start] = 0;
+            parents[start] = null;
+            visited.clear();
+            commentLog.innerHTML = ''; // Clear previous comments
+            commentIndex = 0;
+            const initialComment = `Starting UCS from node ${start}. Initialized priority queue with node ${start} (cost 0).`;
+            infoDiv.textContent = initialComment;
+            appendComment(initialComment);
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            drawGraph();
+
+            while (priorityQueue.values.length > 0) {
+                let { node, cost } = priorityQueue.dequeue();
+                currentNode = node;
+                if (isStopping) {
+                    infoDiv.textContent = 'UCS stopped by user.';
+                    appendComment('UCS stopped by user.');
+                    isStopping = false; // Reset flag
+                    drawGraph(); // Redraw graph in current state
+                    return;
+                }
+                const dequeueComment = `Dequeued node ${node} with cost ${cost.toFixed(1)}. Exploring neighbors...`;
+                infoDiv.textContent = dequeueComment;
+                appendComment(dequeueComment);
+                drawGraph();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                if (node === goal) {
+                    // Reconstruct path
+                    path = [];
+                    let current = node;
+                    while (current !== null) {
+                        let parent = parents[current];
+                        if (parent !== null) {
+                            path.push(parent + '-' + current);
+                        }
+                        current = parent;
+                    }
+                    const goalComment = `Goal ${goal} reached! Shortest path cost: ${distances[goal].toFixed(1)}. Path: ${path.join(', ')}`;
+                    infoDiv.textContent = goalComment;
+                    appendComment(goalComment);
+                    drawGraph();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    return;
+                }
+
+                if (!visited.has(node)) {
+                    visited.add(node);
+                    const visitedComment = `Marked node ${node} as visited (green). Checking neighbors: ${graph[node].map(e => e.node).join(', ')}`;
+                    infoDiv.textContent = visitedComment;
+                    appendComment(visitedComment);
+                    drawGraph();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    for (let edge of graph[node]) {
+                        let newCost = distances[node] + edge.cost;
+                        if (!(edge.node in distances) || newCost < distances[edge.node]) {
+                            distances[edge.node] = newCost;
+                            parents[edge.node] = node;
+                            priorityQueue.enqueue(edge.node, newCost);
+                            const updateComment = `Updated distance to node ${edge.node} to ${newCost.toFixed(1)}. Added to priority queue. Queue: ${priorityQueue.values.map(v => `Node ${v.node} (cost ${v.cost.toFixed(1)})`).join(', ')}`;
+                            infoDiv.textContent = updateComment;
+                            appendComment(updateComment);
+                            drawGraph();
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        } else {
+                            const skipComment = `Checked node ${edge.node}. Current distance ${distances[edge.node].toFixed(1)} <= new cost ${newCost.toFixed(1)}. No update needed.`;
+                            infoDiv.textContent = skipComment;
+                            appendComment(skipComment);
+                            drawGraph();
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                } else {
+                    const alreadyVisitedComment = `Node ${node} already visited. Skipping.`;
+                    infoDiv.textContent = alreadyVisitedComment;
+                    appendComment(alreadyVisitedComment);
+                    drawGraph();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+            if (isStopping) {
+                infoDiv.textContent = 'UCS stopped by user.';
+                appendComment('UCS stopped by user.');
+                isStopping = false; // Reset flag
+                drawGraph(); // Redraw graph in current state
+                return;
+            }
+            const notReachableComment = `Goal ${goal} not reachable.`;
+            infoDiv.textContent = notReachableComment;
+            appendComment(notReachableComment);
+            drawGraph();
+        }
+
+        // Start UCS animation
+        function startUCS() {
+            isStopping = false; // Reset stop flag
+            priorityQueue = [];
+            visited.clear();
+            distances = {};
+            parents = {};
+            path = [];
+            currentNode = null;
+            uniformCostSearch(0, 5); // Start at node 0, goal at node 5
+        }
+
+        // Stop UCS animation
+        function stopUCS() {
+            isStopping = true;
+            infoDiv.textContent = 'Stopping UCS...';
+            appendComment('Stop button pressed. Stopping UCS...');
+        }
+
+        // Go Back function
+        function goBack() {
+            window.history.back();
+        }
+
+        // Initial draw
+        drawGraph();
+    </script>
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PageRank Algorithm Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muted-green: #7BA88D;
+            --light-green: #A3C1AD;
+            --pastel-yellow: #FFF5B8;
+            --light-pastel-yellow: #FFFAD1;
+            --text-dark: #2C3E50;
+            --white: #ffffff;
+            --baby-pink: #FFD1DC;
+            --light-baby-pink: #FFE4E9;
+            --primary-color: var(--muted-green);
+            --secondary-color: #6a9278;
+            --card-background: var(--white);
+            --text-color: var(--text-dark);
+            --border-light: #e2e8f0;
+            --success-color: #22c55e;
+            --highlight-color: var(--pastel-yellow);
+            --baby-pink-accent: var(--baby-pink);
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-pastel-yellow) 0%, var(--pastel-yellow) 100%);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container > div:first-child {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1 1 auto;
+            min-width: 300px;
+        }
+
+        canvas {
+            width: 800px;
+            height: 400px; /* Height is half the width */
+            border: 2px solid var(--border-light);
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+            max-width: 100%;
+        }
+
+        canvas:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        #info {
+            max-width: 800px;
+            width: 100%;
+            text-align: left;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log {
+            max-width: 800px;
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        #comment-log .comment {
+            margin: 0.75rem 0;
+            font-size: 0.95rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        #comment-log .comment:hover {
+            background-color: var(--highlight-color);
+        }
+
+        #comment-log .highlight {
+            background-color: var(--highlight-color);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--muted-green);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        #pagerank-table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--card-background);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        #pagerank-table th, #pagerank-table td {
+            padding: 0.75rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        #pagerank-table th {
+            background-color: var(--light-green);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        #pagerank-table td {
+            background-color: var(--card-background);
+        }
+
+        #pagerank-table tr:hover td {
+            background-color: var(--highlight-color);
+        }
+
+        #comment-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #comment-log::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #comment-log::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container h1 {
+            color: var(--muted-green);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <h1>PageRank Algorithm Simulation</h1>
+            <canvas id="graphCanvas"></canvas>
+            <div id="info" class="fade-in">Click "Start Simulation" to visualize the PageRank algorithm</div>
+            <table id="pagerank-table">
+                <thead>
+                    <tr>
+                        <th>Iteration</th>
+                        <th>Node 1</th>
+                        <th>Node 2</th>
+                        <th>Node 3</th>
+                        <th>Node 4</th>
+                    </tr>
+                </thead>
+                <tbody id="pagerank-table-body"></tbody>
+            </table>
+            <div id="comment-log" class="fade-in"></div>
+            <button onclick="startSimulation()">Start Simulation</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+        const commentLog = document.getElementById('comment-log');
+        const tableBody = document.getElementById('pagerank-table-body');
+
+        // Canvas dimensions (set dynamically to match CSS)
+        canvas.width = 800;
+        canvas.height = 400;
+
+        // Graph parameters
+        const numNodes = 4;
+        const nodeColors = ['#808080', '#00FFFF', '#FF0000', '#008000']; // Gray, Cyan, Red, Green
+        const nodePositions = [
+            { x: 200, y: 100 }, // Node 1
+            { x: 200, y: 300 }, // Node 2
+            { x: 600, y: 100 }, // Node 3
+            { x: 600, y: 300 }  // Node 4
+        ];
+
+        // Transition probabilities (normalized from the graph)
+        // Note: The probabilities in the image don't sum to 1 for outgoing edges, so I'll normalize them.
+        const transitionMatrix = [
+            [0, 1/3, 2/3, 0],     // Node 1 -> 2 (1/2), 3 (1) -> normalized to 1/3, 2/3
+            [1/7, 0, 0, 6/7],     // Node 2 -> 1 (1/3), 4 (2) -> normalized to 1/7, 6/7
+            [2/3, 0, 0, 1/3],     // Node 3 -> 1 (1), 4 (1/2) -> normalized to 2/3, 1/3
+            [0, 1/7, 6/7, 0]      // Node 4 -> 2 (1/2), 3 (3) -> normalized to 1/7, 6/7
+        ];
+
+        const dampingFactor = 0.85;
+        let pageRank = Array(numNodes).fill(1 / numNodes); // Initial PageRank
+        let iteration = 0;
+        let commentIndex = 0;
+        let highlightedNode = null;
+        let highlightedEdge = null;
+
+        // Append comment to log and highlight current
+        function appendComment(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            commentDiv.id = `comment-${commentIndex}`;
+            commentDiv.textContent = comment;
+            commentLog.appendChild(commentDiv);
+            const prevHighlight = document.querySelector('.highlight');
+            if (prevHighlight) prevHighlight.classList.remove('highlight');
+            commentDiv.classList.add('highlight');
+            commentLog.scrollTop = commentLog.scrollHeight;
+            commentIndex++;
+        }
+
+        // Update PageRank table
+        function updateTable() {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${iteration}</td>
+                <td>${pageRank[0].toFixed(4)}</td>
+                <td>${pageRank[1].toFixed(4)}</td>
+                <td>${pageRank[2].toFixed(4)}</td>
+                <td>${pageRank[3].toFixed(4)}</td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+        // Draw hexagonal node
+        function drawHexagon(x, y, size, fillColor) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i + Math.PI / 6;
+                const px = x + size * Math.cos(angle);
+                const py = y + size * Math.sin(angle);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            ctx.strokeStyle = '#2C3E50'; // --text-dark
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Draw the graph
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw edges
+            for (let i = 0; i < numNodes; i++) {
+                for (let j = 0; j < numNodes; j++) {
+                    if (transitionMatrix[i][j] > 0) {
+                        const startPos = nodePositions[i];
+                        const endPos = nodePositions[j];
+                        const isHighlighted = highlightedEdge && highlightedEdge.from === i + 1 && highlightedEdge.to === j + 1;
+
+                        // Draw arrow
+                        const angle = Math.atan2(endPos.y - startPos.y, endPos.x - startPos.x);
+                        const arrowLength = 20;
+                        const arrowHead = 10;
+                        const offset = 30; // Offset to avoid overlapping with node
+                        const startX = startPos.x + offset * Math.cos(angle);
+                        const startY = startPos.y + offset * Math.sin(angle);
+                        const endX = endPos.x - offset * Math.cos(angle);
+                        const endY = endPos.y - offset * Math.sin(angle);
+
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(endX, endY);
+                        ctx.strokeStyle = isHighlighted ? '#FFF5B8' : '#2C3E50'; // Highlighted edge in pastel-yellow
+                        ctx.lineWidth = isHighlighted ? 4 : 2;
+                        ctx.stroke();
+
+                        // Draw arrowhead
+                        ctx.beginPath();
+                        ctx.moveTo(endX, endY);
+                        ctx.lineTo(
+                            endX - arrowLength * Math.cos(angle - Math.PI / 6),
+                            endY - arrowLength * Math.sin(angle - Math.PI / 6)
+                        );
+                        ctx.moveTo(endX, endY);
+                        ctx.lineTo(
+                            endX - arrowLength * Math.cos(angle + Math.PI / 6),
+                            endY - arrowLength * Math.sin(angle + Math.PI / 6)
+                        );
+                        ctx.stroke();
+
+                        // Draw probability label
+                        const midX = (startX + endX) / 2;
+                        const midY = (startY + endY) / 2;
+                        ctx.fillStyle = isHighlighted ? '#FFF5B8' : '#2C3E50';
+                        ctx.font = '14px Poppins';
+                        ctx.fillText(transitionMatrix[i][j].toFixed(2), midX, midY - 10);
+                    }
+                }
+            }
+
+            // Draw nodes
+            for (let i = 0; i < numNodes; i++) {
+                const pos = nodePositions[i];
+                const fillColor = i + 1 === highlightedNode ? '#FFF5B8' : nodeColors[i];
+                drawHexagon(pos.x, pos.y, 30, fillColor);
+                ctx.fillStyle = '#2C3E50';
+                ctx.font = '16px Poppins';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i + 1, pos.x, pos.y);
+                ctx.fillText(pageRank[i].toFixed(4), pos.x, pos.y + 40);
+            }
+        }
+
+        // PageRank iteration
+        async function computePageRank() {
+            const newPageRank = Array(numNodes).fill(0);
+            for (let i = 0; i < numNodes; i++) {
+                highlightedNode = i + 1;
+                let sum = 0;
+                for (let j = 0; j < numNodes; j++) {
+                    if (transitionMatrix[j][i] > 0) {
+                        highlightedEdge = { from: j + 1, to: i + 1 };
+                        sum += transitionMatrix[j][i] * pageRank[j];
+                        appendComment(`Node ${i + 1} receives ${transitionMatrix[j][i].toFixed(2)} * ${pageRank[j].toFixed(4)} from Node ${j + 1}`);
+                        drawGraph();
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                    }
+                }
+                newPageRank[i] = (1 - dampingFactor) / numNodes + dampingFactor * sum;
+                appendComment(`Node ${i + 1} new PageRank: ${newPageRank[i].toFixed(4)}`);
+                drawGraph();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            // Check for convergence
+            let maxDiff = 0;
+            for (let i = 0; i < numNodes; i++) {
+                maxDiff = Math.max(maxDiff, Math.abs(newPageRank[i] - pageRank[i]));
+            }
+            pageRank = newPageRank;
+            iteration++;
+            updateTable();
+            highlightedNode = null;
+            highlightedEdge = null;
+
+            if (maxDiff > 0.0001 && iteration < 10) {
+                appendComment(`Iteration ${iteration} completed. Max difference: ${maxDiff.toFixed(6)}`);
+                await computePageRank();
+            } else {
+                appendComment(`Converged after ${iteration} iterations. Final PageRank scores: ${pageRank.map(score => score.toFixed(4)).join(', ')}`);
+                infoDiv.textContent = `Simulation completed. Final PageRank scores displayed.`;
+            }
+        }
+
+        // Start simulation
+        async function startSimulation() {
+            pageRank = Array(numNodes).fill(1 / numNodes);
+            iteration = 0;
+            commentIndex = 0;
+            highlightedNode = null;
+            highlightedEdge = null;
+            tableBody.innerHTML = '';
+            commentLog.innerHTML = '';
+            appendComment(`Starting PageRank simulation with initial scores: ${pageRank.map(score => score.toFixed(4)).join(', ')}`);
+            updateTable();
+            drawGraph();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            await computePageRank();
+        }
+
+        // Initial draw
+        drawGraph();
+    </script>
+</body>
+</html>

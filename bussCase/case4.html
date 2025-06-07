@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandwidth Optimization for Data-Intensive Workloads in AWS - Business Case Analysis</title>
+    <link rel="stylesheet" href="BCstyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .large-push-relabel-img {
+            max-width: 450px;
+            max-height: 450px;
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+            background: #fff;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div class="case-analysis-container">
+        <header class="case-header">
+            <nav class="back-nav">
+                <a href="../index.html#srd4-business-case" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Business Case
+                </a>
+            </nav>
+            <h1>Bandwidth Optimization for Data-Intensive Workloads in AWS Using Approximate Push-Relabel and GNN Prediction</h1>
+            <div class="case-meta">
+                <span class="meta-item">
+                    <i class="fas fa-project-diagram"></i>
+                    Domain: Network Optimization & Machine Learning
+                </span>
+            </div>
+        </header>
+
+        <main class="case-content">
+            <section class="section">
+                <h2 class="section-title">Overview</h2>
+                <p class="content-text">
+                    AWS supports data-intensive workloads, such as large-scale data transfers from Amazon S3 to Amazon Redshift across Availability Zones (AZs), requiring efficient bandwidth allocation to avoid congestion and ensure high throughput. Current AWS infrastructure uses scalable max-flow algorithms like Ford-Fulkerson and potentially Push-Relabel within Transit Gateway (TGW) and Elastic Load Balancer (ELB) systems, leveraging Nitro-based networking. However, these algorithms face challenges with dynamic traffic, bursty workloads, and computational overhead in large topologies. This business case proposes a hybrid solution: an approximate Push-Relabel algorithm integrated with Graph Neural Network (GNN)-based traffic forecasting using AWS SageMaker and GraphStorm. The solution aims to enhance real-time adaptability, reduce computational costs, and optimize bandwidth allocation.
+                </p>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Current Algorithms Used by AWS</h2>
+                <ul class="content-list">
+                    <li>
+                        <strong>Ford-Fulkerson Algorithm (Scalable Variants):</strong>
+                        Used for static, high-throughput bandwidth allocation across TGW and ELB. Iteratively finds augmenting paths to maximize flow, suitable for stable network graphs. Likely implemented with optimizations (e.g., breadth-first search for shortest augmenting paths).
+                    </li>
+                    <li>
+                        <strong>Supporting Infrastructure:</strong>
+                        <ul>
+                            <li>VPC Flow Logs and CloudWatch: Provide real-time traffic overview for monitoring and reactive adjustments.</li>
+                            <li>Auto Scaling and ELB: Distribute workloads based on flow logic and health metrics.</li>
+                            <li>Transit Gateway: Routes traffic across VPCs and AZs using static or BGP-propagated routes.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Proposed Enhancements</h2>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <!-- <h3>Flowchart</h3> -->
+                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 8px; display: inline-block;">
+                        <img src="../image/flow4.png" alt="flowchart" style="max-width: 300%; height: auto; display: block;">
+                    </div>
+                </div>
+                <div class="enhancement-block">
+                    <h3>1. GNN-Based Traffic Prediction with SageMaker and GraphStorm</h3>
+                    <p class="content-text">
+                        <strong>Idea:</strong> Use GNNs to model AWS network topology and predict traffic patterns, guiding the approximate Push-Relabel algorithm.
+                    </p>
+                    <p class="content-text">
+                        <strong>Implementation:</strong> Model the network as a graph (nodes = endpoints like VPCs or AZs, edges = transfer channels). Train GNNs using GraphStorm on SageMaker with VPC Flow Logs and CloudWatch data to predict traffic spikes, link failures, and seasonal patterns. Integrate predictions to pre-allocate bandwidth, adjusting Push-Relabel inputs (e.g., edge capacities) proactively.
+                    </p>
+
+                </div>
+                <div class="enhancement-block">
+                    <h3>2. Approximate Push-Relabel Algorithm</h3>
+                    <p class="content-text">
+                        <strong>Idea:</strong> Modify the Push-Relabel algorithm to trade slight precision for faster execution, optimizing bandwidth allocation in real-time which reduces computational overhead, enabling faster adaptation to changing network states in high-speed environments.
+                    </p>
+                    <div class="enhancement-header" onclick="toggleDetails(this)">
+                        <h4>View Implementation Details</h4>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    <div class="enhancement-content">
+                        <div class="implementation-part">
+                            <div class="implementation-text">
+                                <p class="implementation-description">
+                                    <strong>Implementation:</strong> Use approximate height functions and partial push operations to reduce computation per iteration. Prioritize high-throughput paths using Nitro-based EC2 instances for rapid processing. Deploy via TGW to allocate bandwidth dynamically across AZs.
+                                </p>
+                                <div style="text-align:center; margin: 1.5rem 0;">
+                                    <img src="../image/pushrelabel.png" alt="Push-Relabel Algorithm Steps" style="max-width:420px;width:100%;height:auto;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,0.08);background:#fff;object-fit:contain;">
+                                </div>
+                                <p class="content-text">
+                                    The Push-Relabel Algorithm is a max-flow algorithm used to compute the maximum flow in a flow network, which is a directed graph where edges have capacities and flow must be conserved at nodes (except source and sink). Unlike the Ford-Fulkerson algorithm, which augments paths iteratively, Push-Relabel operates by maintaining a preflow (where flow into a node can exceed flow out) and uses two main operations: push (send excess flow to neighbors) and relabel (adjust node heights to enable pushes). It's particularly efficient for dense graphs and large-scale networks, making it suitable for applications like bandwidth allocation in AWS networking.
+                                </p>
+                                <p class="assumptions-text">
+                                    <strong>Assumptions:</strong> The Push-Relabel algorithm assumes a directed graph with non-negative capacities, static nodes, no real-time telemetry, a single source and sink, and terminates when no nodes have excess, without handling dynamic updates or link failures.
+                                </p>
+                                <button class="view-code-btn" onclick="viewCode('push-relabel')">
+                                    <i class="fas fa-code"></i>
+                                    View Code
+                                </button>
+                                <a href="../algos/pushrelable.html" target="_blank" class="view-code-btn" style="margin-left: 10px; text-decoration: none; display: inline-block;">
+                                    <i class="fas fa-play"></i>
+                                    Watch Simulation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Space-Time Complexity Analysis</h2>
+                <div class="complexity-table-container">
+                    <table class="complexity-table">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Time Complexity</th>
+                                <th>Space Complexity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="component-cell">Ford-Fulkerson (Scalable Variant)</td>
+                                <td>O(m * f) (BFS: O(m * n))</td>
+                                <td>O(n + m)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">Push-Relabel</td>
+                                <td>O(n² * m) worst case<br>O(n * m * log(n²/m)) with dynamic trees</td>
+                                <td>O(n + m)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">Approximate Push-Relabel</td>
+                                <td>O(n * m)</td>
+                                <td>O(n + m)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">GNN-Based Traffic Prediction</td>
+                                <td>O(e * n²) training<br>O(n²) inference</td>
+                                <td>O(n + m + d)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Trade-offs</h2>
+                <ul class="content-list">
+                    <li>Precision Loss: Approximate Push-Relabel sacrifices minor flow optimality for speed, potentially missing 1-5% of maximum flow in edge cases.</li>
+                    <li>Computational Overhead: GNN training and inference add CPU and memory demands, especially during model updates.</li>
+                    <li>Complexity: Integrating GNNs with Push-Relabel increases system complexity, requiring skilled engineering for deployment and maintenance.</li>
+                    <li>Training Costs: GNN model training on SageMaker incurs computational and storage costs, particularly for large datasets.</li>
+                </ul>
+            </section>
+
+            <div class="complexity-summary">
+                <h3>Summary</h3>
+                <p class="summary-text">
+                    The proposed enhancements—approximate Push-Relabel combined with GNN-based traffic forecasting—address the limitations of static and reactive bandwidth allocation in AWS's data-intensive workloads. By leveraging AWS SageMaker and GraphStorm, the solution optimizes throughput, reduces congestion, and lowers costs, delivering significant value to enterprise clients. While precision loss and computational overhead are trade-offs, the performance gains and scalability justify the enhancements, positioning AWS as a leader in high-performance cloud networking.
+                </p>
+            </div>
+
+            <div class="citations-section">
+                <h2 class="section-title">References</h2>
+                <ol class="citations-list">
+                    <li>AWS. (2023). Bandwidth Recommendations for User Connections. <a href="https://docs.aws.amazon.com/workspaces/latest/adminguide/bandwidth-recommendations-user-connections.html" target="_blank">https://docs.aws.amazon.com/workspaces/latest/adminguide/bandwidth-recommendations-user-connections.html</a></li>
+                    <li>Kent, Q. (2023). Matroid Push-Relabel Algorithm. <a href="https://kentq.s3.amazonaws.com/matroid-push-relabel.pdf" target="_blank">https://kentq.s3.amazonaws.com/matroid-push-relabel.pdf</a></li>
+                    <li>AWS. (2023). EC2 Instance Network Bandwidth. <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html" target="_blank">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html</a></li>
+                    <li>AWS. (2023). AWS TV: Network Optimization. <a href="https://aws.amazon.com/awstv/watch/70d82a08dd0/" target="_blank">https://aws.amazon.com/awstv/watch/70d82a08dd0/</a></li>
+                    <li>AWS. (2023). Build a GNN-based Real-time Fraud Detection Solution Using the Deep Graph Library. <a href="https://aws.amazon.com/blogs/machine-learning/build-a-gnn-based-real-time-fraud-detection-solution-using-the-deep-graph-library-without-using-external-graph-storage/" target="_blank">https://aws.amazon.com/blogs/machine-learning/build-a-gnn-based-real-time-fraud-detection-solution-using-the-deep-graph-library-without-using-external-graph-storage/</a></li>
+                    <li>GeeksforGeeks. (2023). Introduction to Push-Relabel Algorithm. <a href="https://www.geeksforgeeks.org/introduction-to-push-relabel-algorithm/" target="_blank">https://www.geeksforgeeks.org/introduction-to-push-relabel-algorithm/</a></li>
+                </ol>
+            </div>
+        </main>
+    </div>
+
+    <div id="codeModal" class="code-modal">
+        <div class="code-modal-content">
+            <div class="code-modal-header">
+                <h3 id="modalTitle">Code Implementation</h3>
+                <button class="close-modal" onclick="closeCodeModal()">&times;</button>
+            </div>
+            <div class="code-modal-body">
+                <pre><code class="python" id="modalCode"></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleDetails(element) {
+        const content = element.nextElementSibling;
+        const icon = element.querySelector('.dropdown-icon');
+        content.classList.toggle('show');
+        icon.classList.toggle('rotate');
+    }
+
+    function viewCode(implementationType) {
+        const modal = document.getElementById('codeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCode = document.getElementById('modalCode');
+        
+        if (codeImplementations[implementationType]) {
+            modalTitle.textContent = codeImplementations[implementationType].title;
+            modalCode.textContent = codeImplementations[implementationType].code;
+            modal.style.display = 'block';
+        }
+    }
+
+    function closeCodeModal() {
+        const modal = document.getElementById('codeModal');
+        modal.style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('codeModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    const codeImplementations = {
+        'push-relabel': {
+            title: 'Approximate Push-Relabel Algorithm',
+            code: `from collections import defaultdict
+import heapq
+
+# Data Structure for Network Graph
+class Graph:
+    def __init__(self):
+        self.graph = defaultdict(list)  # {node: [(neighbor, capacity)]}
+        self.flow = defaultdict(lambda: defaultdict(int))  # Flow on edges
+
+    def add_edge(self, u, v, capacity):
+        self.graph[u].append((v, capacity))
+        self.graph[v].append((u, 0))  # Residual edge
+
+    def update_capacity(self, u, v, new_capacity):
+        for i, (neighbor, _) in enumerate(self.graph[u]):
+            if neighbor == v:
+                self.graph[u][i] = (v, new_capacity)
+                break
+
+# Push-Relabel Algorithm
+class PushRelabel:
+    def __init__(self, graph):
+        self.graph = graph
+        self.height = {}
+        self.excess = {}
+        self.active = []
+
+    def initialize(self, source, sink, nodes):
+        self.height = {v: 0 for v in nodes}
+        self.height[source] = len(nodes)
+        self.excess = {v: 0 for v in nodes}
+        self.flow = self.graph.flow
+
+        # Push initial flow from source
+        for v, capacity in self.graph.graph[source]:
+            if capacity > 0:
+                self.flow[source][v] = capacity
+                self.flow[v][source] = -capacity
+                self.excess[v] = capacity
+                self.excess[source] -= capacity
+
+    def push(self, u, v):
+        residual = 0
+        for neighbor, capacity in self.graph.graph[u]:
+            if neighbor == v:
+                residual = capacity - self.flow[u][v]
+                break
+        if residual <= 0:
+            return False
+        delta = min(self.excess[u], residual)
+        if delta > 0 and self.height[u] > self.height[v]:
+            self.flow[u][v] += delta
+            self.flow[v][u] -= delta
+            self.excess[u] -= delta
+            self.excess[v] += delta
+            return True
+        return False
+
+    def relabel(self, u):
+        min_height = float('inf')
+        for v, capacity in self.graph.graph[u]:
+            if capacity - self.flow[u][v] > 0:
+                min_height = min(min_height, self.height[v])
+        if min_height < float('inf'):
+            self.height[u] = min_height + 1
+
+    def max_flow(self, source, sink):
+        nodes = list(self.graph.graph.keys())
+        self.initialize(source, sink, nodes)
+
+        # Active nodes with excess
+        self.active = [u for u in nodes if u != source and u != sink and self.excess[u] > 0]
+        heapq.heapify(self.active)
+
+        while self.active:
+            u = heapq.heappop(self.active)
+            if u == source or u == sink or self.excess[u] <= 0:
+                continue
+
+            pushed = False
+            for v, _ in self.graph.graph[u]:
+                if self.push(u, v):
+                    pushed = True
+                    if v != source and v != sink and v not in self.active:
+                        heapq.heappush(self.active, v)
+
+            if not pushed:
+                self.relabel(u)
+                heapq.heappush(self.active, u)
+
+        return self.excess[sink], self.flow
+
+# Example Usage
+def main():
+    g = Graph()
+    g.add_edge(1, 2, 10)  # Source (1) to node 2: 10 Gbps
+    g.add_edge(1, 3, 5)   # Source to node 3: 5 Gbps
+    g.add_edge(2, 4, 8)   # Node 2 to sink (4): 8 Gbps
+    g.add_edge(3, 4, 6)   # Node 3 to sink: 6 Gbps
+
+    pr = PushRelabel(g)
+    max_flow, flow = pr.max_flow(1, 4)
+    print(f"Maximum Bandwidth Allocation: {max_flow} Gbps")
+    print("Flow Allocation:", {f"{u}->{v}": f for u, d in flow.items() for v, f in d.items() if f > 0})
+
+    # Simulate congestion: reduce capacity of edge 2->4
+    g.update_capacity(2, 4, 4)
+    pr = PushRelabel(g)
+    max_flow, flow = pr.max_flow(1, 4)
+    print(f"Updated Maximum Bandwidth Allocation: {max_flow} Gbps")
+    print("Updated Flow Allocation:", {f"{u}->{v}": f for u, d in flow.items() for v, f in d.items() if f > 0})
+
+if __name__ == "__main__":
+    main()`
+        }
+    };
+    </script>
+</body>
+</html>

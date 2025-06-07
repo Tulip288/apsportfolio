@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimizing AWS Transit Gateway with Advanced Algorithms - Business Case Analysis</title>
+    <link rel="stylesheet" href="BCstyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="case-analysis-container">
+        <header class="case-header">
+            <nav class="back-nav">
+                <a href="../index.html#srd3-business-case" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Business Case
+                </a>
+            </nav>
+            <h1>Optimizing AWS Transit Gateway with Advanced Algorithms</h1>
+            <div class="case-meta">
+                <span class="meta-item">
+                    <i class="fas fa-project-diagram"></i>
+                    Domain: Network Optimization & Algorithmic Engineering
+                </span>
+            </div>
+        </header>
+
+        <main class="case-content">
+            <section class="section">
+                <h2 class="section-title">Overview</h2>
+                <p class="content-text">
+                    AWS Transit Gateway (TGW) streamlines connectivity between Amazon Virtual Private Clouds (VPCs), on-premises networks, and other AWS services using a hub-and-spoke model. As enterprise networks scale to manage hundreds of VPCs and thousands of routes, TGW faces challenges with suboptimal routing paths and slow route lookups due to static configurations and large routing tables. This business case proposes two algorithmic enhancements: (1) the A* Search Algorithm for dynamic route optimization based on real-time metrics and (2) Hash Mapping for O(1) routing table access. These improvements aim to enhance path efficiency and improve scalability for large-scale AWS network deployments.
+                </p>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Current Algorithms Used by AWS Transit Gateway</h2>
+                <ul class="content-list">
+                    <li>
+                        <strong>Static Route Tables:</strong>
+                        <ul>
+                            Uses manually configured or dynamically propagated routes (via BGP) to determine paths between VPCs and on-premises networks.Routes are selected based on longest prefix matching, prioritizing specific routes over defaults.
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Shortest-Path Routing:</strong>
+                        <ul>
+                            Employs algorithms like Dijkstra's or Bellman-Ford to compute paths based on static metrics (e.g., hop count) when routes are updated.Updates occur reactively, triggered by network changes (e.g., link failures, BGP updates).
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Tree-Based Route Lookup:</strong>
+                        <ul>
+                            Routing tables are typically implemented as tree-based structures (e.g., prefix trees or tries) for longest prefix matching.Lookups scale logarithmically with the number of routes.
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Proposed Enhancements</h2>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <!-- <h3>Flowchart</h3> -->
+                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 8px; display: inline-block;">
+                        <img src="../image/flow3.png" alt="flowchart" style="max-width: 300%; height: auto; display: block;">
+                    </div>
+                </div>
+                <div class="enhancement-block">
+                    <h3>1. A* Search Algorithm for Dynamic Route Optimization</h3>
+                    <p class="content-text">
+                        <strong>Idea:</strong> Use the A* search algorithm to compute optimal paths between network endpoints, incorporating dynamic metrics such as latency, cost, bandwidth availability, and hop count. This enables context-aware routing, reducing latency and costs by selecting paths that adapt to current network conditions.
+                    </p>
+                    <div class="enhancement-header" onclick="toggleDetails(this)">
+                        <h4>View Implementation Details</h4>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    <div class="enhancement-content">
+                        <div class="implementation-part with-image">
+                            <div class="implementation-text">
+                                <p class="implementation-description">
+                                    <strong>Implementation:</strong> Represent the network as a graph, with nodes as VPCs or on-premises gateways and edges as connections with dynamic weights . Define the A* cost function: f(n) = g(n) + h(n), where g(n) is the actual cost to reach node n, and h(n) is a heuristic to the target based on historical data. Run A* periodically or on-demand to compute optimal paths, updating routes based on real-time telemetry.
+                                </p>
+                                <p class="assumptions-text">
+                                    <strong>Assumptions:</strong> The A* algorithm assumes an undirected graph with static nodes, non-negative edge weights (latency, cost, bandwidth), a simple heuristic based on node distance, and no real-time telemetry updates, computing paths on-demand without handling network failures.
+                                </p>
+                                <button class="view-code-btn" onclick="viewCode('astar')">
+                                    <i class="fas fa-code"></i>
+                                    View Code
+                                </button>
+                                <a href="../algos/astar.html" target="_blank" class="view-code-btn" style="margin-left: 10px; text-decoration: none; display: inline-block;">
+                                    <i class="fas fa-play"></i>
+                                    Watch Simulation
+                                </a>
+                            </div>
+                            <div class="implementation-image">
+                                <img src="../image/astar.png" alt="A* Search Algorithm" class="large-astar-img" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="enhancement-block">
+                    <h3>2. Hash Mapping for Faster Routing Table Access</h3>
+                    <p class="content-text">
+                        <strong>Idea:</strong> Replace tree-based route lookups with hash maps to achieve O(1) access time for routing entries. This can reduce packet forwarding latency and improve scalability for large routing tables.
+                    </p>
+                    <div class="enhancement-header" onclick="toggleDetails(this)">
+                        <h4>View Implementation Details</h4>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    <div class="enhancement-content">
+                        <div class="implementation-part with-image">
+                            <div class="implementation-text">
+                                <p class="implementation-description">
+                                    <strong>Implementation:</strong> Hash destination IP prefixes to routing entries, storing next-hop information in a hash table. Use collision resolution strategies (e.g., chaining or open addressing) to handle prefix overlaps. Update the hash table dynamically as routes change via BGP or manual configurations.
+                                </p>
+                                <p class="assumptions-text">
+                                    <strong>Assumptions:</strong> The hash table assumes fixed-length IP prefixes, a simple ASCII-based hash function, chaining for collision resolution, static table size, and no prefix matching (exact lookups only), with dynamic updates but no BGP or real-time synchronization.
+                                </p>
+                                <button class="view-code-btn" onclick="viewCode('hashmap')">
+                                    <i class="fas fa-code"></i>
+                                    View Code
+                                </button>
+                            </div>
+                            <div class="implementation-image">
+                                <img src="../image/hashmap.png" alt="Hash Mapping for Routing Table" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Space-Time Complexity Analysis</h2>
+                <div class="complexity-table-container">
+                    <table class="complexity-table">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Time Complexity</th>
+                                <th>Space Complexity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="component-cell">Static Route Tables with Shortest-Path Routing</td>
+                                <td>O(m log n) for Dijkstra's<br>O(1) for static lookups</td>
+                                <td>O(n + m + k)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">Tree-Based Route Lookup (Prefix Trie)</td>
+                                <td>O(log k)</td>
+                                <td>O(k * l)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">A* Search Algorithm</td>
+                                <td>O(m log n) for A* path computation</td>
+                                <td>O(n + m + h)</td>
+                            </tr>
+                            <tr>
+                                <td class="component-cell">Hash Mapping for Route Lookup</td>
+                                <td>O(1) amortized for lookups<br>O(k) for table updates</td>
+                                <td>O(k) (plus chaining)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Trade-offs</h2>
+                <ul class="content-list">
+                    <li>Computational Overhead: A* introduces higher computational complexity for path computation compared to static routing, increasing CPU usage on TGW nodes.</li>
+                    <li>Memory Usage: Hash tables require more memory than tree-based structures for large routing tables, especially with collision resolution.</li>
+                    <li>Complexity: Implementing A* and hash mapping increases system complexity, requiring skilled engineers for maintenance.</li>
+                    <li>Initial Setup Cost: Developing and deploying these algorithms involves upfront engineering and testing efforts.</li>
+                </ul>
+            </section>
+
+            <div class="complexity-summary">
+                <h3>Summary</h3>
+                <p class="summary-text">
+                    The proposed enhancements to AWS Transit Gateway—A* Search Algorithm for dynamic route optimization and Hash Mapping for faster route lookups—address critical limitations in static routing and slow lookups. These improvements reduce latency, enhance scalability, and lower costs, delivering value to enterprise clients with complex network topologies. While computational overhead and system complexity increase, the performance gains and competitive advantages justify the enhancements, positioning AWS TGW as a premier solution for hybrid cloud connectivity.
+                </p>
+            </div>
+
+            <div class="citations-section">
+                <h2 class="section-title">References</h2>
+                <ol class="citations-list">
+                    <li>AWS. (2023). What is AWS Transit Gateway? <a href="https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html" target="_blank">https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html</a></li>
+                    <li>AWS. (2023). Enabling Global Expansion and Reduced Operational Overhead at Comcast with AWS Transit Gateway. <a href="https://aws.amazon.com/blogs/networking-and-content-delivery/enabling-global-expansion-and-reduced-operational-overhead-at-comcast-with-aws-transit-gateway/" target="_blank">https://aws.amazon.com/blogs/networking-and-content-delivery/enabling-global-expansion-and-reduced-operational-overhead-at-comcast-with-aws-transit-gateway/</a></li>
+                    <li>AWS. (2023). AWS Transit Gateway Now Supports Intra-Region Peering. <a href="https://aws.amazon.com/blogs/networking-and-content-delivery/aws-transit-gateway-now-supports-intra-region-peering/" target="_blank">https://aws.amazon.com/blogs/networking-and-content-delivery/aws-transit-gateway-now-supports-intra-region-peering/</a></li>
+                    <li>Tony, I. (2023). Enhancing Network Performance with ECMP Routing in AWS Transit Gateway. <a href="https://dev.to/isaactony/enhancing-network-performance-with-ecmp-routing-in-aws-transit-gateway-5d99" target="_blank">https://dev.to/isaactony/enhancing-network-performance-with-ecmp-routing-in-aws-transit-gateway-5d99</a></li>
+                    <li>ResearchGate. (2023). Optimal Routing in Shortest-Path Data Networks. <a href="https://www.researchgate.net/publication/220440260_Optimal_routing_in_shortest-path_data_networks" target="_blank">https://www.researchgate.net/publication/220440260_Optimal_routing_in_shortest-path_data_networks</a></li>
+                </ol>
+            </div>
+        </main>
+    </div>
+
+    <div id="codeModal" class="code-modal">
+        <div class="code-modal-content">
+            <div class="code-modal-header">
+                <h3 id="modalTitle">Code Implementation</h3>
+                <button class="close-modal" onclick="closeCodeModal()">&times;</button>
+            </div>
+            <div class="code-modal-body">
+                <pre><code class="python" id="modalCode"></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleDetails(element) {
+        const content = element.nextElementSibling;
+        const icon = element.querySelector('.dropdown-icon');
+        content.classList.toggle('show');
+        icon.classList.toggle('rotate');
+    }
+
+    const codeImplementations = {
+        'astar': {
+            title: 'A* Search Algorithm for Dynamic Route Optimization',
+            code: `import heapq
+from collections import defaultdict
+
+# Data Structure for Network Graph
+class Graph:
+    def __init__(self):
+        self.graph = defaultdict(list)  # Adjacency list: {node: [(neighbor, latency, cost, bandwidth)]}
+    
+    def add_edge(self, u, v, latency, cost, bandwidth):
+        self.graph[u].append((v, latency, cost, bandwidth))
+        self.graph[v].append((u, latency, cost, bandwidth))
+
+# A* Search Algorithm
+class AStarRouter:
+    def __init__(self, graph):
+        self.graph = graph
+    
+    def heuristic(self, node, end):
+        # Basic heuristic: assume minimum latency to target (can use historical data)
+        return 0.1  # Placeholder (e.g., estimated latency in ms)
+    
+    def compute_path(self, start, end):
+        pq = [(0, 0, start, [start])]  # (f_score, g_score, node, path)
+        visited = set()
+        g_scores = {start: 0}  # Actual cost to reach node
+        
+        while pq:
+            f_score, g_score, node, path = heapq.heappop(pq)
+            if node in visited:
+                continue
+            visited.add(node)
+            
+            if node == end:
+                return path, g_score
+            
+            for neighbor, latency, cost, bandwidth in self.graph.graph[node]:
+                if neighbor not in visited:
+                    # Dynamic cost: weighted sum of metrics
+                    edge_cost = latency * 0.5 + cost * 0.3 + (1/bandwidth) * 0.2
+                    new_g_score = g_score + edge_cost
+                    
+                    if neighbor not in g_scores or new_g_score < g_scores[neighbor]:
+                        g_scores[neighbor] = new_g_score
+                        h_score = self.heuristic(neighbor, end)
+                        f_score = new_g_score + h_score
+                        heapq.heappush(pq, (f_score, new_g_score, neighbor, path + [neighbor]))
+        
+        return [], float('inf')  # No path found
+
+# Example Usage
+def main():
+    g = Graph()
+    g.add_edge(1, 2, latency=10, cost=5, bandwidth=100)
+    g.add_edge(1, 3, latency=5, cost=3, bandwidth=200)
+    g.add_edge(2, 4, latency=5, cost=4, bandwidth=150)
+    g.add_edge(3, 4, latency=5, cost=4, bandwidth=150)
+    g.add_edge(3, 5, latency=15, cost=10, bandwidth=50)
+    g.add_edge(4, 5, latency=10, cost=5, bandwidth=100)
+    
+    router = AStarRouter(g)
+    path, cost = router.compute_path(1, 5)
+    print(f"Optimal path from 1 to 5: {path}, Cost: {cost}")
+
+if __name__ == "__main__":
+    main()`
+        },
+        'hashmap': {
+            title: 'Hash Mapping for Faster Routing Table Access',
+            code: `from collections import defaultdict
+
+# Hash Table for Routing Entries
+class RoutingTable:
+    def __init__(self):
+        self.table = defaultdict(list)  # {hash_key: [(prefix, next_hop, priority)]}
+    
+    def hash_key(self, prefix):
+        # Simple hash function for IP prefix
+        return hash(prefix) % 1000  # Modulo for table size
+    
+    def add_route(self, prefix, next_hop, priority=1):
+        key = self.hash_key(prefix)
+        # Remove existing entry for same prefix
+        self.table[key] = [(p, nh, pr) for p, nh, pr in self.table[key] if p != prefix]
+        # Add new route with chaining
+        self.table[key].append((prefix, next_hop, priority))
+    
+    def remove_route(self, prefix):
+        key = self.hash_key(prefix)
+        self.table[key] = [(p, nh, pr) for p, nh, pr in self.table[key] if p != prefix]
+        if not self.table[key]:
+            del self.table[key]
+    
+    def lookup(self, destination):
+        key = self.hash_key(destination)
+        best_match = None
+        highest_priority = -1
+        
+        # Check all entries in the chain
+        for prefix, next_hop, priority in self.table[key]:
+            if destination.startswith(prefix) and priority > highest_priority:
+                best_match = next_hop
+                highest_priority = priority
+        
+        return best_match if best_match else "No route found"
+
+# Example Usage
+def main():
+    rt = RoutingTable()
+    rt.add_route("192.168.1.0/24", "10.0.0.1", priority=1)
+    rt.add_route("192.168.2.0/24", "10.0.0.2", priority=2)
+    rt.add_route("192.168.1.0/24", "10.0.0.3", priority=3)  # Higher priority route
+    
+    print(f"Lookup 192.168.1.10: {rt.lookup('192.168.1.10')}")
+    print(f"Lookup 192.168.2.10: {rt.lookup('192.168.2.10')}")
+    print(f"Lookup 10.0.0.1: {rt.lookup('10.0.0.1')}")
+    
+    rt.remove_route("192.168.1.0/24")
+    print(f"Lookup 192.168.1.10 after removal: {rt.lookup('192.168.1.10')}")
+
+if __name__ == "__main__":
+    main()`
+        }
+    };
+
+    function viewCode(implementationType) {
+        const modal = document.getElementById('codeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCode = document.getElementById('modalCode');
+        
+        if (codeImplementations[implementationType]) {
+            modalTitle.textContent = codeImplementations[implementationType].title;
+            modalCode.textContent = codeImplementations[implementationType].code;
+            modal.style.display = 'block';
+        }
+    }
+
+    function closeCodeModal() {
+        const modal = document.getElementById('codeModal');
+        modal.style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('codeModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+    </script>
+</body>
+</html>
